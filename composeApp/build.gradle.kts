@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 kotlin {
@@ -40,9 +41,25 @@ kotlin {
             implementation(compose.material)
             implementation(compose.ui)
             implementation(compose.components.resources)
+            implementation(libs.navigation.compose)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            // Jetpack Compose integration
+            implementation(libs.androidx.navigation.compose)
+
+            // Views/Fragments integration
+            implementation(libs.androidx.navigation.fragment)
+            implementation(libs.androidx.navigation.ui)
+
+            // Feature module support for Fragments
+            implementation(libs.androidx.navigation.dynamic.features.fragment)
+
+//            // Testing Navigation
+//            androidTestImplementation(libs.androidx.navigation.testing)
+
+            // JSON serialization library, works with the Kotlin serialization plugin
+            implementation(libs.kotlinx.serialization.json)
         }
     }
 }

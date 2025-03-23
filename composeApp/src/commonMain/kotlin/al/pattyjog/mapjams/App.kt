@@ -1,5 +1,9 @@
 package al.pattyjog.mapjams
 
+import al.pattyjog.mapjams.geo.Map
+import al.pattyjog.mapjams.geo.Region
+import al.pattyjog.mapjams.music.MusicSource
+import al.pattyjog.mapjams.ui.AppNavigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -19,19 +23,18 @@ import mapjams.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
 fun App() {
+    // Sample data for preview
+    val sampleMaps = listOf(
+        Map(
+            id = "1",
+            name = "My Map Collection",
+            regions = listOf(
+                Region(id = "r1", name = "Region 1", polygon = listOf(), musicSource = MusicSource.Local("path/to/song"))
+            )
+        )
+    )
+
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
-        }
+        AppNavigation(maps = sampleMaps)
     }
 }
