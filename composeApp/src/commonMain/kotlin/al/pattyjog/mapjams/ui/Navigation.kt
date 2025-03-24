@@ -15,6 +15,9 @@ object MapList
 @Serializable
 data class MapDetail(val id: String)
 
+@Serializable
+data class EditRegion(val id: String)
+
 @Composable
 fun AppNavigation(maps: List<Map>) {
     val navController = rememberNavController()
@@ -36,11 +39,26 @@ fun AppNavigation(maps: List<Map>) {
             if (selectedMap != null) {
                 MapDetailScreen(
                     map = selectedMap,
-                    onRegionEdit = {},
-                    onRegionDelete = {}
+                    onRegionEdit = {
+                        navController.navigate(EditRegion(id = it.id))
+                    },
+                    onRegionDelete = {},
+                    onRegionCreate = {}
                 )
             } else {
                 Text("Map not found")
+            }
+        }
+
+        composable<EditRegion> { backStackEntry ->
+            val region: EditRegion = backStackEntry.toRoute()
+            // TODO: Performant lookup
+            val selectedRegion = maps.flatMap { it.regions }.find { it.id == region.id }
+
+            if (selectedRegion != null) {
+                RegionEditScreen()
+            } else {
+                Text("Region not found")
             }
         }
     }
