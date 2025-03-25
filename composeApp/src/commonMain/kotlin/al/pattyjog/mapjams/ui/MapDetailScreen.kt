@@ -1,6 +1,6 @@
 package al.pattyjog.mapjams.ui
 
-import al.pattyjog.mapjams.geo.Map
+import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Region
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -21,15 +21,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 @Preview
 fun MapDetailScreen(
-    map: Map,
+    mapId: String,
     onRegionEdit: (Region) -> Unit,
     onRegionDelete: (Region) -> Unit,
     onRegionCreate: () -> Unit,
 ) {
+    val vm = koinViewModel<MapViewModel>()
+    val map = vm.getMapById(mapId)
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -39,23 +43,26 @@ fun MapDetailScreen(
             }
         }
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(map.regions) { region ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable { onRegionEdit(region) }
-                ) {
-                    Column(
-                        modifier = Modifier.padding(8.dp)
+        if (map != null) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(map.regions) { region ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable { onRegionEdit(region) }
                     ) {
-                        Text(text = region.name, style = MaterialTheme.typography.h6)
+                        Column(
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(text = region.name, style = MaterialTheme.typography.h6)
+                        }
                     }
                 }
             }
+
+        } else {
+            Text("Map not found")
         }
-
     }
-
 }

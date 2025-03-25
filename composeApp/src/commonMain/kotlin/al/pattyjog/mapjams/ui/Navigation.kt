@@ -25,7 +25,6 @@ fun AppNavigation(maps: List<Map>) {
     NavHost(navController = navController, startDestination = MapList) {
         composable<MapList> {
             MapListScreen(
-                maps = maps,
                 onMapClick = {
                     navController.navigate(MapDetail(id = it.id))
                 }
@@ -38,7 +37,7 @@ fun AppNavigation(maps: List<Map>) {
 
             if (selectedMap != null) {
                 MapDetailScreen(
-                    map = selectedMap,
+                    mapId = selectedMap.id,
                     onRegionEdit = {
                         navController.navigate(EditRegion(id = it.id))
                     },
@@ -56,7 +55,10 @@ fun AppNavigation(maps: List<Map>) {
             val selectedRegion = maps.flatMap { it.regions }.find { it.id == region.id }
 
             if (selectedRegion != null) {
-                RegionEditScreen()
+                RegionEditScreen(
+                    initialRegion = selectedRegion,
+                    onRegionSave = TODO(),
+                )
             } else {
                 Text("Region not found")
             }

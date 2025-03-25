@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.secrets)
     kotlin("plugin.serialization") version "2.0.21"
+    id("app.cash.sqldelight") version "2.0.2"
 }
 
 kotlin {
@@ -24,7 +25,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -35,7 +36,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -47,8 +48,11 @@ kotlin {
             // Feature module support for Fragments
             implementation(libs.androidx.navigation.dynamic.features.fragment)
 
-
             implementation(libs.android.maps.compose)
+
+            implementation(libs.android.driver)
+
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -62,8 +66,23 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
 
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+
             // JSON serialization library, works with the Kotlin serialization plugin
             implementation(libs.kotlinx.serialization.json)
+
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.viewmodel.navigation)
+
+            implementation(libs.lifecycle.viewmodel.compose)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.native.driver)
         }
     }
 }
@@ -105,4 +124,12 @@ secrets {
     // A properties file containing default secret values. This file can be
     // checked in version control.
     defaultPropertiesFileName = "local.defaults.properties"
+}
+
+sqldelight {
+    databases {
+        create("MapJamsDatabase") {
+            packageName.set("al.pattyjog.mapjams")
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package al.pattyjog.mapjams.ui
 
+import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Map
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -9,20 +10,41 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 @Preview
 fun MapListScreen(
-    maps: List<Map>,
     onMapClick: (Map) -> Unit
 ) {
-    MaterialTheme {
+    val vm = koinViewModel<MapViewModel>()
+    val maps by vm.maps.collectAsState()
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { vm.addMap(Map(Uuid.random().toString(), "New Map", emptyList())) }
+            ) {
+                Icon(Icons.Filled.Add, "Create a new map")
+            }
+        }
+    ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(maps) { map ->
                 Card(
@@ -38,5 +60,6 @@ fun MapListScreen(
                 }
             }
         }
+
     }
 }

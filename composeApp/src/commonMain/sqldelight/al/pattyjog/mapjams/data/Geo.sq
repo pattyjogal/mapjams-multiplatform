@@ -1,0 +1,26 @@
+CREATE TABLE map (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE region (
+  id TEXT PRIMARY KEY,
+  mapId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  -- You can store the polygon as JSON or another serialized format.
+  polygon TEXT NOT NULL,
+  musicSource TEXT NOT NULL,
+  FOREIGN KEY(mapId) REFERENCES map(id)
+);
+
+selectAllMaps:
+SELECT * FROM map;
+
+selectMapById:
+SELECT * FROM map WHERE id = ?;
+
+insertMap:
+INSERT INTO map(id, name) VALUES (?, ?);
+
+selectRegionsByMapId:
+SELECT * FROM region WHERE mapId = ?;
