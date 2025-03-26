@@ -1,7 +1,6 @@
 package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.geo.Map
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,7 +18,7 @@ data class MapDetail(val id: String)
 data class EditRegion(val id: String)
 
 @Composable
-fun AppNavigation(maps: List<Map>) {
+fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = MapList) {
