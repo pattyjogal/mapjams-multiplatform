@@ -9,15 +9,31 @@ import al.pattyjog.mapjams.data.Map as MapEntity
 
 interface MapRepository {
     suspend fun findMap(id: String): Map?
+    suspend fun findRegion(id: String): Region?
     suspend fun getMaps(): List<Map>
     suspend fun addMaps(maps: List<Map>)
     suspend fun deleteMap(id: String)
+    suspend fun addRegionToMap(map: Map, region: Region)
+    suspend fun deleteRegion(id: String)
+    suspend fun updateRegion(region: Region)
 }
 
 class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
     override suspend fun findMap(id: String): Map? {
         val mapRow = db.geoQueries.selectMapById(id).executeAsOneOrNull()
         return mapRow?.let { rowToMap(it) }
+    }
+
+    override suspend fun findRegion(id: String): Region? {
+        val regionRow = db.geoQueries.selectRegionById(id).executeAsOneOrNull()
+        return regionRow?.let {
+            Region(
+                id = it.id,
+                name = it.name,
+                polygon = deserializePolygon(it.polygon),
+                musicSource = MusicSource.Local(it.musicSource)
+            )
+        }
     }
 
     override suspend fun getMaps(): List<Map> {
@@ -45,17 +61,43 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
     override suspend fun addMaps(maps: List<Map>) {
         maps.forEach { map ->
             db.geoQueries.insertMap(map.id, map.name)
-
-            // TODO: Insert regions
+            map.regions.forEach { region ->
+                addRegionToMap(map, region)
+            }
         }
     }
 
     override suspend fun deleteMap(id: String) {
-        TODO("Not yet implemented")
+        db.geoQueries.deleteMap(id)
     }
 
-    private fun deserializePolygon(json: String): List<LatLng> {
-        // TODO: Implement your JSON deserialization logic here.
-        return emptyList()
+    override suspend fun addRegionToMap(map: Map, region: Region) {
+        db.geoQueries.insertRegion(
+            id = region.id,
+            mapId = map.id,
+            name = region.name,
+            polygon = serializePolygon(region.polygon),
+            musicSource = region.musicSource.toString()
+        )
+    }
+
+    override suspend fun updateRegion(region: Region) {
+        db.geoQueries.updateRegion(
+            name = region.name,
+            polygon = serializePolygon(region.polygon),
+            musicSource = region.musicSource.toString(),
+            id = region.id
+        )
+    }
+
+    override suspend fun deleteRegion(id: String) {
+        db.geoQueries.deleteRegion(id)
+    }
+
+    private fun serializePolygon(polygon: List<LatLng>) = polygon.joinToString(";") { "${it.latitude}:${it.longitude}" }
+
+    private fun deserializePolygon(json: String) = json.split(";").map {
+        val (latitude, longitude) = it.split(":")
+        LatLng(latitude.toDouble(), longitude.toDouble())
     }
 }

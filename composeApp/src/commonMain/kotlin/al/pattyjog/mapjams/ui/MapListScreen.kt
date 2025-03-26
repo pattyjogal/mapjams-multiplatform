@@ -3,7 +3,9 @@ package al.pattyjog.mapjams.ui
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Map
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,11 +14,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -53,9 +57,16 @@ fun MapListScreen(
                         .padding(8.dp)
                         .clickable { onMapClick(map) }
                 ) {
-                    Column {
-                        Text(text = map.name, style = MaterialTheme.typography.h6)
-                        Text(text = "${map.regions.size} regions", style = MaterialTheme.typography.body2)
+                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        Column {
+                            Text(text = map.name, style = MaterialTheme.typography.h6)
+                            Text(text = "${map.regions.size} regions", style = MaterialTheme.typography.body2)
+                        }
+                        IconButton(
+                            onClick = { vm.deleteMap(map) },
+                        ) {
+                            Icon(Icons.Filled.Delete, "Delete this map")
+                        }
                     }
                 }
             }

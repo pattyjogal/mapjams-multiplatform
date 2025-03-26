@@ -10,7 +10,7 @@ CREATE TABLE region (
   -- You can store the polygon as JSON or another serialized format.
   polygon TEXT NOT NULL,
   musicSource TEXT NOT NULL,
-  FOREIGN KEY(mapId) REFERENCES map(id)
+  FOREIGN KEY(mapId) REFERENCES map(id) ON DELETE CASCADE
 );
 
 selectAllMaps:
@@ -19,8 +19,27 @@ SELECT * FROM map;
 selectMapById:
 SELECT * FROM map WHERE id = ?;
 
+selectRegionById:
+SELECT * FROM region WHERE id = ?;
+
 insertMap:
 INSERT INTO map(id, name) VALUES (?, ?);
 
+deleteMap:
+DELETE FROM map WHERE id = ?;
+
 selectRegionsByMapId:
 SELECT * FROM region WHERE mapId = ?;
+
+insertRegion:
+INSERT INTO region(id, mapId, name, polygon, musicSource) VALUES (?, ?, ?, ?, ?);
+
+updateRegion:
+UPDATE region
+SET name = ?,
+    polygon = ?,
+    musicSource = ?
+WHERE id = ?;
+
+deleteRegion:
+DELETE FROM region WHERE id = ?;

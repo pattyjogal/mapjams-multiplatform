@@ -33,35 +33,27 @@ fun AppNavigation(maps: List<Map>) {
 
         composable<MapDetail> { backStackEntry ->
             val mapDetail: MapDetail = backStackEntry.toRoute()
-            val selectedMap = maps.find { it.id == mapDetail.id }
 
-            if (selectedMap != null) {
-                MapDetailScreen(
-                    mapId = selectedMap.id,
-                    onRegionEdit = {
-                        navController.navigate(EditRegion(id = it.id))
-                    },
-                    onRegionDelete = {},
-                    onRegionCreate = {}
-                )
-            } else {
-                Text("Map not found")
-            }
+            MapDetailScreen(
+                mapId = mapDetail.id,
+                onRegionEdit = {
+                    navController.navigate(EditRegion(id = it.id))
+                },
+                onRegionDelete = {},
+                onRegionCreate = {}
+            )
         }
 
         composable<EditRegion> { backStackEntry ->
             val region: EditRegion = backStackEntry.toRoute()
-            // TODO: Performant lookup
-            val selectedRegion = maps.flatMap { it.regions }.find { it.id == region.id }
 
-            if (selectedRegion != null) {
                 RegionEditScreen(
-                    initialRegion = selectedRegion,
-                    onRegionSave = TODO(),
+                    initialRegionId = region.id,
+                    onRegionSave = {
+                        navController.popBackStack()
+                    },
                 )
-            } else {
-                Text("Region not found")
-            }
+
         }
     }
 }
