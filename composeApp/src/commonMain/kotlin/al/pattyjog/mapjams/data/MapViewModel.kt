@@ -29,6 +29,13 @@ class MapViewModel(private val repository: MapRepository) : ViewModel() {
         }
     }
 
+    fun addRegion(map: Map, newRegion: Region) {
+        viewModelScope.launch {
+            repository.addRegionToMap(map, newRegion)
+            loadMaps()
+        }
+    }
+
     fun deleteMap(map: Map) {
         viewModelScope.launch {
             repository.deleteMap(map.id)

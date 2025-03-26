@@ -2,6 +2,7 @@ package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Region
+import al.pattyjog.mapjams.music.MusicSource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,14 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 @Preview
 fun MapDetailScreen(
     mapId: String,
     onRegionEdit: (Region) -> Unit,
-    onRegionDelete: (Region) -> Unit,
-    onRegionCreate: () -> Unit,
 ) {
     val vm = koinViewModel<MapViewModel>()
     val map = vm.getMapById(mapId)
@@ -37,7 +39,17 @@ fun MapDetailScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onRegionCreate() }
+                onClick = {
+                    map?.let {
+                        vm.addRegion(
+                            it, Region(
+                                id = Uuid.random().toString(),
+                                name = "Test Region",
+                                polygon = listOf(),
+                                musicSource = MusicSource.Local("test")
+                            ))
+                    }
+                }
             ) {
                 Icon(Icons.Filled.Add, "Add region")
             }

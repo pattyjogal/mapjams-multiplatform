@@ -39,8 +39,6 @@ fun AppNavigation(maps: List<Map>) {
                 onRegionEdit = {
                     navController.navigate(EditRegion(id = it.id))
                 },
-                onRegionDelete = {},
-                onRegionCreate = {}
             )
         }
 

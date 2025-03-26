@@ -7,6 +7,7 @@ import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.music.MusicSource
 import al.pattyjog.mapjams.data.Map as MapEntity
 
+// BUG: Updating a region doesn't refresh viewmodel?
 interface MapRepository {
     suspend fun findMap(id: String): Map?
     suspend fun findRegion(id: String): Region?
@@ -96,8 +97,10 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
 
     private fun serializePolygon(polygon: List<LatLng>) = polygon.joinToString(";") { "${it.latitude}:${it.longitude}" }
 
-    private fun deserializePolygon(json: String) = json.split(";").map {
-        val (latitude, longitude) = it.split(":")
-        LatLng(latitude.toDouble(), longitude.toDouble())
-    }
+    private fun deserializePolygon(json: String) = json.split(";")
+        .takeIf { it.size > 1 || it[0].isNotEmpty() }
+        ?.map {
+            val (latitude, longitude) = it.split(":")
+            LatLng(latitude.toDouble(), longitude.toDouble())
+        } ?: emptyList()
 }
