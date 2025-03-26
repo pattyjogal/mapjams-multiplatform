@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -34,7 +36,8 @@ fun MapDetailScreen(
     onRegionEdit: (Region) -> Unit,
 ) {
     val vm = koinViewModel<MapViewModel>()
-    val map = vm.getMapById(mapId)
+    val maps by vm.maps.collectAsState()
+    val map = maps.firstOrNull { it.id == mapId }
 
     Scaffold(
         floatingActionButton = {

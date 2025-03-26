@@ -12,20 +12,10 @@ import org.koin.compose.KoinContext
 @Composable
 @Preview
 fun App() {
-    // Sample data for preview
-    val sampleMaps = listOf(
-        Map(
-            id = "1",
-            name = "My Map Collection",
-            regions = listOf(
-                Region(id = "r1", name = "Region 1", polygon = listOf(), musicSource = MusicSource.Local("path/to/song"))
-            )
-        )
-    )
 
     KoinContext {
         MaterialTheme {
-            AppNavigation(maps = sampleMaps)
+            AppNavigation()
         }
     }
 }
