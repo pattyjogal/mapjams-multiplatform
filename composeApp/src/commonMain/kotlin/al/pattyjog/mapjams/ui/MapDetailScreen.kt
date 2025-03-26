@@ -49,7 +49,7 @@ fun MapDetailScreen(
                                 id = Uuid.random().toString(),
                                 name = "Test Region",
                                 polygon = listOf(),
-                                musicSource = MusicSource.Local("test")
+                                musicSource = null,
                             ))
                     }
                 }

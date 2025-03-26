@@ -27,12 +27,12 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
 
     override suspend fun findRegion(id: String): Region? {
         val regionRow = db.geoQueries.selectRegionById(id).executeAsOneOrNull()
-        return regionRow?.let {
+        return regionRow?.let { region ->
             Region(
-                id = it.id,
-                name = it.name,
-                polygon = deserializePolygon(it.polygon),
-                musicSource = MusicSource.Local(it.musicSource)
+                id = region.id,
+                name = region.name,
+                polygon = deserializePolygon(region.polygon),
+                musicSource = region.musicSource?.let(MusicSource::Local)
             )
         }
     }
@@ -53,7 +53,7 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
                     name = regionRow.name,
                     polygon = deserializePolygon(regionRow.polygon),
                     // TODO: Fix when loading music sources for real
-                    musicSource = MusicSource.Local(regionRow.musicSource)
+                    musicSource = regionRow.musicSource?.let(MusicSource::Local)
                 )
             }
         )
@@ -86,7 +86,12 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
         db.geoQueries.updateRegion(
             name = region.name,
             polygon = serializePolygon(region.polygon),
-            musicSource = region.musicSource.toString(),
+            musicSource = when (region.musicSource) {
+                is MusicSource.AppleMusic -> TODO()
+                is MusicSource.Local -> region.musicSource.file
+                is MusicSource.Spotify -> TODO()
+                null -> null
+            },
             id = region.id
         )
     }

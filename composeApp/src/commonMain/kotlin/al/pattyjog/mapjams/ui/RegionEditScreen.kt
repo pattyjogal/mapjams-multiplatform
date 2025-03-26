@@ -4,13 +4,16 @@ import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.ui.components.LocalSongPicker
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,11 +43,15 @@ fun RegionEditScreen(
                     Icon(Icons.Filled.Check, "Save region")
                 }
             }
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                LocalSongPicker(onSongSelected = { newSong ->
-                    regionState = regionState.copy(musicSource = newSong)
-                })
+        ) { padding ->
+            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                TextField(value = regionState.name, onValueChange = { regionState = regionState.copy(name = it) })
+                Row {
+                    Text(regionState.musicSource?.getMetadata()?.let {"${it.title} by ${it.artist}"} ?: "No song picked")
+                    LocalSongPicker(onSongSelected = { newSong ->
+                        regionState = regionState.copy(musicSource = newSong)
+                    })
+                }
                 PlatformMapRegionDrawingComponent(
                     initialPolygon = region.polygon,
                     onPolygonUpdate = {

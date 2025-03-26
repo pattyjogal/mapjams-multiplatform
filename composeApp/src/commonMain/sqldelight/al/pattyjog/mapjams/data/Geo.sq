@@ -9,7 +9,7 @@ CREATE TABLE region (
   name TEXT NOT NULL,
   -- You can store the polygon as JSON or another serialized format.
   polygon TEXT NOT NULL,
-  musicSource TEXT NOT NULL,
+  musicSource TEXT,
   FOREIGN KEY(mapId) REFERENCES map(id) ON DELETE CASCADE
 );
 

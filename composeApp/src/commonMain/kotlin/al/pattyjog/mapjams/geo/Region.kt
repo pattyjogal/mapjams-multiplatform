@@ -6,5 +6,5 @@ data class Region(
     val id: String,
     val name: String,
     val polygon: List<LatLng>,
-    val musicSource: MusicSource
+    val musicSource: MusicSource?
 )
