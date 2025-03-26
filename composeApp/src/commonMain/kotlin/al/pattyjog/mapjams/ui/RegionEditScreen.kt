@@ -44,7 +44,10 @@ fun RegionEditScreen(
                 LocalSongPicker(onSongSelected = { newSong ->
                     regionState = region.copy(musicSource = newSong)
                 })
-                PlatformMapRegionDrawingComponent()
+                PlatformMapRegionDrawingComponent(
+                    initialPolygon = region.polygon,
+                    onPolygonUpdate = {}
+                )
             }
 
         }
