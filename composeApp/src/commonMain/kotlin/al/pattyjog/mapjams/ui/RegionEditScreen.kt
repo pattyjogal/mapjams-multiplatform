@@ -33,6 +33,7 @@ fun RegionEditScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
+                        vm.updateRegion(regionState)
                         onRegionSave(regionState)
                     }
                 ) {
@@ -42,14 +43,15 @@ fun RegionEditScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 LocalSongPicker(onSongSelected = { newSong ->
-                    regionState = region.copy(musicSource = newSong)
+                    regionState = regionState.copy(musicSource = newSong)
                 })
                 PlatformMapRegionDrawingComponent(
                     initialPolygon = region.polygon,
-                    onPolygonUpdate = {}
+                    onPolygonUpdate = {
+                        regionState = regionState.copy(polygon = it)
+                    }
                 )
             }
-
         }
     } else {
         Text("Region not found")

@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.model.CameraPosition
@@ -17,8 +18,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 
 @Composable
 actual fun PlatformMapRegionDrawingComponent(
@@ -47,45 +48,43 @@ actual fun PlatformMapRegionDrawingComponent(
         polygon.mapIndexed { i, position ->
             DraggableMarkerWithEffect(
                 initialPosition = position,
-                onDragEnd = { newPosition ->
-                    Log.d("Huh", "I supposedly updated")
+                onDragChange = { newPosition ->
                     polygon = polygon.toMutableList().apply {
                         set(i, newPosition)
                     }
+                },
+                onDragEnd = {
+                    Log.d("Polygon", "NEW ONE")
+                    onPolygonUpdate(polygon.map { al.pattyjog.mapjams.geo.LatLng(it.latitude, it.longitude) })
                 }
             )
         }
-
-        // TODO: Add drawing logic (e.g., drag gestures, polygon overlays) as needed.
     }
 }
 
+@OptIn(FlowPreview::class)
 @Composable
 fun DraggableMarkerWithEffect(
     initialPosition: LatLng,
+    onDragChange: (LatLng) -> Unit,
     onDragEnd: (LatLng) -> Unit
 ) {
-    // Hold the marker position in a mutable state
-    var markerPosition by remember { mutableStateOf(initialPosition) }
     // Create a marker state from the current markerPosition.
-    val markerState = rememberUpdatedMarkerState(position = markerPosition)
+    val markerState = remember { MarkerState(initialPosition) }
 
     // Observe changes in markerState.position using LaunchedEffect.
     // When it changes, we update our markerPosition and call onDragEnd.
     LaunchedEffect(markerState.position) {
-        // TODO: Implement here
-        if (markerState.position != markerPosition) {
-            markerPosition = markerState.position
-            onDragEnd(markerPosition)
-        }
+        onDragChange(markerState.position)
+        snapshotFlow {
+            markerState.position
+        }.debounce(500)
+            .collect {
+                onDragEnd(markerState.position)
+            }
     }
-
     Marker(
         state = markerState,
         draggable = true,
-        // Note: There's no onDragEnd parameter here.
-        // We rely on LaunchedEffect above to detect when the drag has ended.
-        onClick = { true }
     )
-
 }
