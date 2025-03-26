@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Card
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -57,10 +57,10 @@ fun MapListScreen(
                         .padding(8.dp)
                         .clickable { onMapClick(map) }
                 ) {
-                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                         Column {
-                            Text(text = map.name, style = MaterialTheme.typography.h6)
-                            Text(text = "${map.regions.size} regions", style = MaterialTheme.typography.body2)
+                            Text(text = map.name, style = MaterialTheme.typography.titleMedium)
+                            Text(text = "${map.regions.size} regions", style = MaterialTheme.typography.titleSmall)
                         }
                         IconButton(
                             onClick = { vm.deleteMap(map) },

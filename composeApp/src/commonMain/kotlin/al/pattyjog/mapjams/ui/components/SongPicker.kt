@@ -1,8 +1,8 @@
 package al.pattyjog.mapjams.ui.components
 
 import al.pattyjog.mapjams.music.MusicSource
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
