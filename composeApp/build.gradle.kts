@@ -79,6 +79,10 @@ kotlin {
             implementation(libs.koin.compose.viewmodel.navigation)
 
             implementation(libs.lifecycle.viewmodel.compose)
+
+            api(libs.permissions.compose)
+            implementation(libs.permissions.location)
+
         }
 
         iosMain.dependencies {

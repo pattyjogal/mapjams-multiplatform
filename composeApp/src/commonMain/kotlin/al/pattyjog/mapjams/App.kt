@@ -9,7 +9,6 @@ import org.koin.compose.KoinContext
 @Composable
 @Preview
 fun App() {
-
     KoinContext {
         MaterialTheme {
             AppNavigation()
