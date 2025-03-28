@@ -22,8 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 
@@ -31,9 +30,9 @@ import org.koin.compose.koinInject
 fun Home() {
     var checked by remember { mutableStateOf(false) }
     val geofenceManager: GeofenceManager = koinInject()
-    val locationFlow: MutableStateFlow<LatLng?> = koinInject()
+    val viewModel: LocationViewModel = koinInject()
     val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
-    val location by locationFlow.collectAsState(LatLng(0.0, 0.0))
+    val location by viewModel.currentLocation.collectAsState(LatLng(0.0, 0.0)) // TODO: Tabbing back goes back to this default
 
     val koin = getKoin()
     var isFineLocationPermissionGranted by remember {
@@ -90,6 +89,12 @@ fun Home() {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        if (location != null) {
+            PlatformMapDisplayComponent(
+                regions = emptyList(),
+                currentLocation = location!! // TODO: This feels hacky
+            )
+        }
         Card(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -110,6 +115,5 @@ fun Home() {
         }
     }
 
-        Text("${location?.latitude}, ${location?.longitude}")
 
 }

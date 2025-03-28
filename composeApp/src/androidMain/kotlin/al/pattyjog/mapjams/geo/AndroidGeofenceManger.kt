@@ -18,9 +18,6 @@ class AndroidGeofenceManger(
     override val isTracking: Flow<Boolean>
         get() = _isTracking
 
-
-    override val locationUpdates = emptyFlow<LatLng>()
-
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             locationService = (service as? LocationService.LocalBinder)?.getService()

@@ -4,7 +4,7 @@ import al.pattyjog.mapjams.data.MapRepository
 import al.pattyjog.mapjams.data.MapRepositoryImpl
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.LatLng
-import kotlinx.coroutines.flow.Flow
+import al.pattyjog.mapjams.ui.LocationViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
@@ -19,5 +19,10 @@ val commonModule: Module = module {
 
     viewModel { MapViewModel(repository = get()) }
 
+    viewModel {
+        LocationViewModel(locationFlow = get())
+    }
+
     single { MutableStateFlow<LatLng?>(null) }
+
 }

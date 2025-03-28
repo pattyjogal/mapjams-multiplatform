@@ -6,7 +6,6 @@ interface GeofenceManager {
     fun startMonitoring()
     fun stopMonitoring()
     val isTracking: Flow<Boolean>
-    val locationUpdates: Flow<LatLng>
     fun setRegions(regions: List<Region>)
     fun onEnterRegion(regionId: String)
     fun onExitRegion(regionId: String)
