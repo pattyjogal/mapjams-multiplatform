@@ -1,6 +1,7 @@
 package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.geo.LatLng
+import al.pattyjog.mapjams.geo.Region
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,11 +14,12 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 actual fun PlatformMapDisplayComponent(
-    regions: List<LatLng>, currentLocation: LatLng
+    regions: List<Region>, currentLocation: LatLng
 ) {
     val currentLatLng = com.google.android.gms.maps.model.LatLng(currentLocation.latitude, currentLocation.longitude)
 
@@ -39,5 +41,11 @@ actual fun PlatformMapDisplayComponent(
 
     GoogleMap(
         modifier = Modifier.fillMaxSize(), cameraPositionState = cameraPositionState, properties = properties
-    )
+    ) {
+        regions.map { region ->
+            Polygon(
+                points = region.polygon.map { com.google.android.gms.maps.model.LatLng(it.latitude, it.longitude) }
+            )
+        }
+    }
 }

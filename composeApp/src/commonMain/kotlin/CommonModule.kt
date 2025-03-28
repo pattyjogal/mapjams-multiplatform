@@ -1,5 +1,6 @@
 import al.pattyjog.mapjams.MapJamsDatabase
 import al.pattyjog.mapjams.PermissionBridge
+import al.pattyjog.mapjams.geo.ActiveMapHolder
 import al.pattyjog.mapjams.data.MapRepository
 import al.pattyjog.mapjams.data.MapRepositoryImpl
 import al.pattyjog.mapjams.data.MapViewModel
@@ -16,6 +17,8 @@ val commonModule: Module = module {
     single<MapRepository> { MapRepositoryImpl(db = get()) }
 
     single<PermissionBridge> { PermissionBridge() }
+
+    single<ActiveMapHolder> { ActiveMapHolder() }
 
     viewModel { MapViewModel(repository = get()) }
 

@@ -1,5 +1,6 @@
 package al.pattyjog.mapjams.data
 
+import al.pattyjog.mapjams.geo.ActiveMapHolder
 import al.pattyjog.mapjams.geo.Map
 import al.pattyjog.mapjams.geo.Region
 import androidx.lifecycle.ViewModel
@@ -7,13 +8,21 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class MapViewModel(private val repository: MapRepository) : ViewModel() {
+class MapViewModel(private val repository: MapRepository) : ViewModel(), KoinComponent {
     private val _maps = MutableStateFlow<List<Map>>(emptyList())
     val maps: StateFlow<List<Map>> get() = _maps
 
+    private val _activeMap = MutableStateFlow<Map?>(null)
+    val activeMap: StateFlow<Map?> get() = _activeMap
+
     init {
         loadMaps()
+        viewModelScope.launch {
+            _activeMap.value = repository.getMaps().firstOrNull()
+        }
     }
 
     private fun loadMaps() {
