@@ -8,11 +8,10 @@ import android.os.Build
 import android.os.IBinder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 
 class AndroidGeofenceManger(
     private val context: Context,
-): GeofenceManager {
+): GeofenceManager() {
     private var locationService: LocationService? = null
     private val _isTracking = MutableStateFlow(false)
     override val isTracking: Flow<Boolean>
@@ -48,17 +47,5 @@ class AndroidGeofenceManger(
             context.stopService(intent)
             _isTracking.value = false
         }
-    }
-
-    override fun setRegions(regions: List<Region>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onEnterRegion(regionId: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onExitRegion(regionId: String) {
-        TODO("Not yet implemented")
     }
 }

@@ -11,17 +11,14 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class MapViewModel(private val repository: MapRepository) : ViewModel(), KoinComponent {
+class MapViewModel(private val repository: MapRepository, private val activeMapFlow: MutableStateFlow<Map?>) : ViewModel() {
     private val _maps = MutableStateFlow<List<Map>>(emptyList())
     val maps: StateFlow<List<Map>> get() = _maps
-
-    private val _activeMap = MutableStateFlow<Map?>(null)
-    val activeMap: StateFlow<Map?> get() = _activeMap
 
     init {
         loadMaps()
         viewModelScope.launch {
-            _activeMap.value = repository.getMaps().firstOrNull()
+            activeMapFlow.value = repository.getMaps().firstOrNull()
         }
     }
 

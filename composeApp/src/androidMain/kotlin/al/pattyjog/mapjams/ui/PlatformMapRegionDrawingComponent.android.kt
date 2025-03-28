@@ -1,5 +1,7 @@
 package al.pattyjog.mapjams.ui
 
+import al.pattyjog.mapjams.PermissionBridge
+import al.pattyjog.mapjams.PermissionResultCallback
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -14,27 +16,62 @@ import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import org.koin.compose.getKoin
 
 @Composable
 actual fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<al.pattyjog.mapjams.geo.LatLng>,
-    onPolygonUpdate: (List<al.pattyjog.mapjams.geo.LatLng>) -> Unit
+    onPolygonUpdate: (List<al.pattyjog.mapjams.geo.LatLng>) -> Unit,
 ) {
     var polygon: List<LatLng> by remember { mutableStateOf(initialPolygon.map { LatLng(it.latitude, it.longitude) }) }
-    val center = LatLng(37.7749, -122.4194)
+
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(center, 10f)
+        position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 14f)
+    }
+    val koin = getKoin()
+    var isFineLocationPermissionGranted by remember {
+        mutableStateOf(
+            koin.get<PermissionBridge>().isLocationPermissionGranted()
+        )
+    }
+    fun requestPermission() {
+        koin.get<PermissionBridge>()
+            .requestLocationPermission(object : PermissionResultCallback {
+                override fun onPermissionGranted() {
+                    isFineLocationPermissionGranted =
+                        koin.get<PermissionBridge>().isLocationPermissionGranted()
+                }
+
+                override fun onPermissionDenied(
+                    isPermanentDenied: Boolean
+                ) {
+                    isFineLocationPermissionGranted =
+                        koin.get<PermissionBridge>().isLocationPermissionGranted()
+                }
+            })
     }
 
+    val properties by remember {
+        mutableStateOf(MapProperties(mapType = MapType.NORMAL, isMyLocationEnabled = isFineLocationPermissionGranted ))
+    }
+
+    LaunchedEffect(isFineLocationPermissionGranted) {
+        if (!isFineLocationPermissionGranted) {
+            requestPermission()
+        }
+    }
     // GoogleMap composable provided by the Maps Compose library.
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
+        properties = properties,
         cameraPositionState = cameraPositionState,
         onMapLongClick = {
             polygon += it

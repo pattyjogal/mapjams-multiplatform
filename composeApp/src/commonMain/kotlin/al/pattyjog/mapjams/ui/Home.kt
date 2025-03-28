@@ -33,8 +33,9 @@ fun Home() {
     val locationViewModel: LocationViewModel = koinInject()
     val mapViewModel: MapViewModel = koinInject()
     val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
-    val location by locationViewModel.currentLocation.collectAsState() // TODO: Tabbing back goes back to this default
-    val activeMap by mapViewModel.activeMap.collectAsState()
+    val location by locationViewModel.locationFlow.collectAsState() // TODO: Tabbing back goes back to this default
+    val activeMap by locationViewModel.activeMapFlow.collectAsState()
+    val activeRegion by locationViewModel.regionFlow.collectAsState()
 
     val koin = getKoin()
     var isFineLocationPermissionGranted by remember {
@@ -96,6 +97,8 @@ fun Home() {
                 regions = activeMap?.regions ?: emptyList(),
                 currentLocation = location!! // TODO: This feels hacky
             )
+        } else {
+            Text("Cannot display map yet", modifier = Modifier.fillMaxSize())
         }
         Card(
             modifier = Modifier
@@ -114,6 +117,7 @@ fun Home() {
                 checked = checked
             )
             Text("Permissions: ${isFineLocationPermissionGranted} and ${isBackgroundLocationPermissionGranted}")
+            Text("Region ${activeRegion?.name}")
         }
     }
 

@@ -10,7 +10,7 @@ import dev.icerock.moko.permissions.location.BACKGROUND_LOCATION
 import kotlinx.coroutines.launch
 
 class PermissionsViewModel(val permissionsController: PermissionsController): ViewModel() {
-    fun requestBackgroundLocation() {
+    fun requestForegroundLocation() {
         viewModelScope.launch {
             try {
                 permissionsController.providePermission(Permission.BACKGROUND_LOCATION)

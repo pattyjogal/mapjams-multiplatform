@@ -5,10 +5,15 @@ import al.pattyjog.mapjams.data.MapRepository
 import al.pattyjog.mapjams.data.MapRepositoryImpl
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.LatLng
+import al.pattyjog.mapjams.geo.Map
+import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.ui.LocationViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val commonModule: Module = module {
@@ -18,14 +23,19 @@ val commonModule: Module = module {
 
     single<PermissionBridge> { PermissionBridge() }
 
-    single<ActiveMapHolder> { ActiveMapHolder() }
+    single(named("locationFlow")) { MutableStateFlow<LatLng?>(null) }
+    single(named("regionFlow")) { MutableStateFlow<Region?>(null) }
+    single(named("activeMapFlow")) { MutableStateFlow<Map?>(null) }
 
-    viewModel { MapViewModel(repository = get()) }
-
+    viewModel { MapViewModel(
+        activeMapFlow = get(named("activeMapFlow")),
+        repository = get()
+    ) }
     viewModel {
-        LocationViewModel(locationFlow = get())
+        LocationViewModel(
+            _locationFlow = get(named("locationFlow")),
+            _regionFlow = get(named("regionFlow")),
+            _activeMapFlow = get(named("activeMapFlow"))
+        )
     }
-
-    single { MutableStateFlow<LatLng?>(null) }
-
 }

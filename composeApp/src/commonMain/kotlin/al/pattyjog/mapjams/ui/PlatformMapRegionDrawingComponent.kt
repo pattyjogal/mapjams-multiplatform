@@ -6,5 +6,5 @@ import androidx.compose.runtime.Composable
 @Composable
 expect fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<LatLng>,
-    onPolygonUpdate: (List<LatLng>) -> Unit
+    onPolygonUpdate: (List<LatLng>) -> Unit,
 )

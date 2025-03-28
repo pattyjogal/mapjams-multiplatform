@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.core.qualifier.named
 
 class LocationService : Service() {
     inner class LocalBinder : Binder() {
@@ -30,7 +31,7 @@ class LocationService : Service() {
 
     private val binder = LocalBinder()
 
-    private val locationFlow: MutableStateFlow<LatLng?> by inject()
+    private val locationFlow: MutableStateFlow<LatLng?> by inject(named("locationFlow"))
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 

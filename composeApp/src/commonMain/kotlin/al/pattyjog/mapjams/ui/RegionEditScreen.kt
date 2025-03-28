@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +29,8 @@ fun RegionEditScreen(
     onRegionSave: (Region) -> Unit
 ) {
     val vm = koinViewModel<MapViewModel>()
+    val locationViewModel = koinViewModel<LocationViewModel>()
+    val location by locationViewModel.locationFlow.collectAsState()
     val region = vm.getRegionById(initialRegionId)
     if (region != null) {
         var regionState by remember { mutableStateOf(region) }
