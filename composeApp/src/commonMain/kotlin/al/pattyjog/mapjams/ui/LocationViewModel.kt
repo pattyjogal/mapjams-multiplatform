@@ -34,9 +34,11 @@ class LocationViewModel(
                 }
             }
                 .collect { region ->
-                    musicController.stop()
-                    _regionFlow.value = region
-                    region?.musicSource?.let { musicController.play(it, 0) }
+                    if (_regionFlow.value != region) {
+                        musicController.stop()
+                        _regionFlow.value = region
+                        region?.musicSource?.let { musicController.play(it, 0) }
+                    }
                 }
         }
     }

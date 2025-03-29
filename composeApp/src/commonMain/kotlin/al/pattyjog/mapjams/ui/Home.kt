@@ -6,12 +6,23 @@ import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.GeofenceManager
 import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.music.MusicSource
+import al.pattyjog.mapjams.ui.theme.AppTheme
+import al.pattyjog.mapjams.ui.theme.AppTypography
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
@@ -108,7 +122,13 @@ fun Home() {
         }
     }
 
-    LaunchedEffect(checked, isFineLocationPermissionGranted, isBackgroundLocationPermissionGranted, isDocumentAccessPermissionGranted, isDocumentAccessPermissionNeeded) {
+    LaunchedEffect(
+        checked,
+        isFineLocationPermissionGranted,
+        isBackgroundLocationPermissionGranted,
+        isDocumentAccessPermissionGranted,
+        isDocumentAccessPermissionNeeded
+    ) {
         if (isFineLocationPermissionGranted && isBackgroundLocationPermissionGranted && (!isDocumentAccessPermissionNeeded || isDocumentAccessPermissionGranted)) {
             if (checked) {
                 geofenceManager.startMonitoring()
@@ -126,28 +146,53 @@ fun Home() {
                 currentLocation = location!! // TODO: This feels hacky
             )
         } else {
-            Text("Cannot display map yet", modifier = Modifier.fillMaxSize())
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    "Cannot display map yet",
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    style = AppTypography.headlineSmall.copy(
+                        color = Color.Gray
+                    )
+                )
+            }
         }
         Card(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .height(160.dp)
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-        ) {
-            Switch(
-                onCheckedChange = {
-                    checked = it
-                    if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted || (isDocumentAccessPermissionNeeded && !isDocumentAccessPermissionGranted)) {
-                        requestPermission()
-                    }
-                },
-                checked = checked
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = 10.dp
             )
-            Text("Permissions: ${isFineLocationPermissionGranted} and ${isBackgroundLocationPermissionGranted}")
-            Text("Region ${activeRegion?.name}")
+        ) {
+            Box(modifier = Modifier.padding(16.dp).fillMaxSize()) {
+                Column {
+                    if (checked) {
+                        Text("Region", style = AppTypography.labelSmall)
+                        Text(activeRegion?.name ?: "--", style = AppTypography.headlineMedium)
+//                            } else {
+//                                LinearProgressIndicator(
+//                                    modifier = Modifier.width(128.dp).padding(top = 8.dp),
+//                                    color = MaterialTheme.colorScheme.secondary,
+//                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+//                                )
+                    }
+                }
+
+
+                Switch(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    onCheckedChange = {
+                        checked = it
+                        if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted || (isDocumentAccessPermissionNeeded && !isDocumentAccessPermissionGranted)) {
+                            requestPermission()
+                        }
+                    },
+                    checked = checked
+                )
+            }
         }
     }
-
-
 }

@@ -1,8 +1,8 @@
 package al.pattyjog.mapjams
 
 import al.pattyjog.mapjams.ui.AppNavigation
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import al.pattyjog.mapjams.ui.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
 
@@ -10,7 +10,7 @@ import org.koin.compose.KoinContext
 @Preview
 fun App() {
     KoinContext {
-        MaterialTheme {
+        AppTheme {
             AppNavigation()
         }
     }

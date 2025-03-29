@@ -8,9 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ data class EditRegion(val id: String)
 
 val bottomBarScreens = listOf(Home, MapList)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -51,7 +54,7 @@ fun AppNavigation() {
                         selected = currentRoute!!.hasRoute<Home>(),
                         onClick = { navController.navigate(Home) },
                         icon = { Icon(Icons.Filled.Home, contentDescription = "The home map view") },
-                        label = { Text("Maps") }
+                        label = { Text("Go") }
                     )
                     NavigationBarItem(
                         selected = currentRoute.hasRoute<MapList>(),
