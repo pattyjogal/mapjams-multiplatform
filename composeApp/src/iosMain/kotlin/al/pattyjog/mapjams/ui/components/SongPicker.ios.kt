@@ -9,6 +9,14 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
 
 @Composable
-expect fun LocalSongPicker(
-    onSongSelected: (MusicSource) -> Unit
-)
+actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
+    val launcher = rememberFilePickerLauncher(
+        type = FileKitType.File(extensions = listOf("mp3"))
+    ) { file ->
+        file?.let { onSongSelected(MusicSource.Local(it.path)) }
+    }
+
+    Button(onClick = { launcher.launch() }) {
+        Text("Pick a song file")
+    }
+}

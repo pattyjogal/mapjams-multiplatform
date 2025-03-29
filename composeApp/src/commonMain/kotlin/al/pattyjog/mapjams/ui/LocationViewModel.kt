@@ -3,6 +3,7 @@ package al.pattyjog.mapjams.ui
 import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.geo.Map
 import al.pattyjog.mapjams.geo.Region
+import al.pattyjog.mapjams.music.MusicController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 class LocationViewModel(
     private val _locationFlow: MutableStateFlow<LatLng?>,
     private val _regionFlow: MutableStateFlow<Region?>,
-    private val _activeMapFlow: MutableStateFlow<Map?>
+    private val _activeMapFlow: MutableStateFlow<Map?>,
+    private val musicController: MusicController
 ) : ViewModel() {
     val locationFlow = _locationFlow.asStateFlow()
     val regionFlow = _regionFlow.asStateFlow()
@@ -32,7 +34,9 @@ class LocationViewModel(
                 }
             }
                 .collect { region ->
+                    musicController.stop()
                     _regionFlow.value = region
+                    region?.musicSource?.let { musicController.play(it, 0) }
                 }
         }
     }

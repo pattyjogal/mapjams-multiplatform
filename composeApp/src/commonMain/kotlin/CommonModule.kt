@@ -1,6 +1,5 @@
 import al.pattyjog.mapjams.MapJamsDatabase
 import al.pattyjog.mapjams.PermissionBridge
-import al.pattyjog.mapjams.geo.ActiveMapHolder
 import al.pattyjog.mapjams.data.MapRepository
 import al.pattyjog.mapjams.data.MapRepositoryImpl
 import al.pattyjog.mapjams.data.MapViewModel
@@ -8,11 +7,9 @@ import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.geo.Map
 import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.ui.LocationViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -35,7 +32,8 @@ val commonModule: Module = module {
         LocationViewModel(
             _locationFlow = get(named("locationFlow")),
             _regionFlow = get(named("regionFlow")),
-            _activeMapFlow = get(named("activeMapFlow"))
+            _activeMapFlow = get(named("activeMapFlow")),
+            musicController = get()
         )
     }
 }

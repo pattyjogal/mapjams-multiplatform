@@ -5,6 +5,7 @@ import al.pattyjog.mapjams.PermissionResultCallback
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.GeofenceManager
 import al.pattyjog.mapjams.geo.LatLng
+import al.pattyjog.mapjams.music.MusicSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +49,16 @@ fun Home() {
             koin.get<PermissionBridge>().isBackgroundLocationPermissionGranted()
         )
     }
+    val isDocumentAccessPermissionNeeded by remember {
+        mutableStateOf(
+            activeMap?.regions?.any { it.musicSource is MusicSource.Local } == true
+        )
+    }
+    var isDocumentAccessPermissionGranted by remember {
+        mutableStateOf(
+            koin.get<PermissionBridge>().isDocumentAccessPermissionGranted()
+        )
+    }
 
     fun requestPermission() {
         koin.get<PermissionBridge>()
@@ -78,10 +89,27 @@ fun Home() {
                         koin.get<PermissionBridge>().isBackgroundLocationPermissionGranted()
                 }
             })
+
+        if (isDocumentAccessPermissionNeeded) {
+            koin.get<PermissionBridge>()
+                .requestDocumentAccessPermission(object : PermissionResultCallback {
+                    override fun onPermissionGranted() {
+                        isDocumentAccessPermissionGranted =
+                            koin.get<PermissionBridge>().isDocumentAccessPermissionGranted()
+                    }
+
+                    override fun onPermissionDenied(
+                        isPermanentDenied: Boolean
+                    ) {
+                        isDocumentAccessPermissionGranted =
+                            koin.get<PermissionBridge>().isDocumentAccessPermissionGranted()
+                    }
+                })
+        }
     }
 
-    LaunchedEffect(checked, isFineLocationPermissionGranted, isBackgroundLocationPermissionGranted) {
-        if (isFineLocationPermissionGranted && isBackgroundLocationPermissionGranted) {
+    LaunchedEffect(checked, isFineLocationPermissionGranted, isBackgroundLocationPermissionGranted, isDocumentAccessPermissionGranted, isDocumentAccessPermissionNeeded) {
+        if (isFineLocationPermissionGranted && isBackgroundLocationPermissionGranted && (!isDocumentAccessPermissionNeeded || isDocumentAccessPermissionGranted)) {
             if (checked) {
                 geofenceManager.startMonitoring()
             } else {
@@ -110,7 +138,7 @@ fun Home() {
             Switch(
                 onCheckedChange = {
                     checked = it
-                    if (!isFineLocationPermissionGranted && !isBackgroundLocationPermissionGranted) {
+                    if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted || (isDocumentAccessPermissionNeeded && !isDocumentAccessPermissionGranted)) {
                         requestPermission()
                     }
                 },

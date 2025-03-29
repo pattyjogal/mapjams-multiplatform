@@ -53,6 +53,8 @@ kotlin {
             implementation(libs.android.driver)
 
             implementation(libs.koin.android)
+
+            implementation(libs.androidx.media3.exoplayer)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

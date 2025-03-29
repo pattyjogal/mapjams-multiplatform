@@ -5,4 +5,6 @@ actual interface PermissionsBridgeListener {
     actual fun requestBackgroundLocationPermission(callback: PermissionResultCallback)
     actual fun isLocationPermissionGranted(): Boolean
     actual fun isBackgroundLocationPermissionGranted(): Boolean
+    actual fun requestDocumentAccessPermission(callback: PermissionResultCallback)
+    actual fun isDocumentAccessPermissionGranted(): Boolean
 }

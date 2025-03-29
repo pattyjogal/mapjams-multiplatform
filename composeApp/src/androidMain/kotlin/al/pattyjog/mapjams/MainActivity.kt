@@ -25,6 +25,7 @@ import org.koin.core.context.startKoin
 class MainActivity : ComponentActivity(), PermissionsBridgeListener {
     private var fineLocationPermissionResultCallback: PermissionResultCallback? = null
     private var backgroundLocationPermissionResultCallback: PermissionResultCallback? = null
+    private var documentAccessPermissionResultCallback: PermissionResultCallback? = null
 
     private val requestFineLocationPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -46,6 +47,17 @@ class MainActivity : ComponentActivity(), PermissionsBridgeListener {
                 val permanentlyDenied =
                     !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 backgroundLocationPermissionResultCallback?.onPermissionDenied(permanentlyDenied)
+            }
+        }
+
+    private val requestDocumentAccessPermissionLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                documentAccessPermissionResultCallback?.onPermissionGranted()
+            } else {
+                val permanentlyDenied =
+                    !shouldShowRequestPermissionRationale(getDocumentAccessPermission())
+                documentAccessPermissionResultCallback?.onPermissionDenied(permanentlyDenied)
             }
         }
 
@@ -127,6 +139,42 @@ class MainActivity : ComponentActivity(), PermissionsBridgeListener {
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             true
+        }
+    }
+
+    override fun requestDocumentAccessPermission(callback: PermissionResultCallback) {
+        val permission = getDocumentAccessPermission()
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                callback.onPermissionGranted()
+            }
+
+            shouldShowRequestPermissionRationale(permission) -> {
+                callback.onPermissionDenied(false)
+            }
+
+            else -> {
+                documentAccessPermissionResultCallback = callback
+                requestDocumentAccessPermissionLauncher.launch(permission)
+            }
+        }
+    }
+
+    override fun isDocumentAccessPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            getDocumentAccessPermission()
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun getDocumentAccessPermission(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
         }
     }
 }

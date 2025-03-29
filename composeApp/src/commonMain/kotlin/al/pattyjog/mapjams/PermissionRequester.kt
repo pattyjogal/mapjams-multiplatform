@@ -3,8 +3,10 @@ package al.pattyjog.mapjams
 expect interface PermissionsBridgeListener {
     fun requestLocationPermission(callback: PermissionResultCallback)
     fun requestBackgroundLocationPermission(callback: PermissionResultCallback)
+    fun requestDocumentAccessPermission(callback: PermissionResultCallback)
     fun isLocationPermissionGranted(): Boolean
     fun isBackgroundLocationPermissionGranted(): Boolean
+    fun isDocumentAccessPermissionGranted(): Boolean
 }
 
 class PermissionBridge {
@@ -26,6 +28,13 @@ class PermissionBridge {
         return listener?.isBackgroundLocationPermissionGranted() ?: false
     }
 
+    fun requestDocumentAccessPermission(callback: PermissionResultCallback) {
+        listener?.requestDocumentAccessPermission(callback) ?: error("Callback handler not set")
+    }
+
+    fun isDocumentAccessPermissionGranted(): Boolean {
+        return listener?.isDocumentAccessPermissionGranted() ?: false
+    }
 }
 
 interface PermissionResultCallback {

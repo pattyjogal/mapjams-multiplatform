@@ -3,6 +3,8 @@ import al.pattyjog.mapjams.PermissionBridge
 import al.pattyjog.mapjams.PermissionsViewModel
 import al.pattyjog.mapjams.geo.AndroidGeofenceManger
 import al.pattyjog.mapjams.geo.GeofenceManager
+import al.pattyjog.mapjams.music.AndroidMusicController
+import al.pattyjog.mapjams.music.MusicController
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import dev.icerock.moko.permissions.PermissionsController
@@ -20,9 +22,13 @@ val androidModule: Module = module {
         )
     }
 
-    viewModel { PermissionsViewModel(
-        permissionsController = PermissionsController(applicationContext = androidContext())
-    ) }
+    viewModel {
+        PermissionsViewModel(
+            permissionsController = PermissionsController(applicationContext = androidContext())
+        )
+    }
 
     single<GeofenceManager> { AndroidGeofenceManger(androidContext()) }
+
+    single<MusicController> { AndroidMusicController(androidContext()) }
 }
