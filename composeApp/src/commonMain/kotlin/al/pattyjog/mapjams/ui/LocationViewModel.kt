@@ -6,12 +6,21 @@ import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.music.MusicController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.koin.core.logger.Logger
+import kotlin.coroutines.cancellation.CancellationException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LocationViewModel(
     private val _locationFlow: MutableStateFlow<LatLng?>,
     private val _regionFlow: MutableStateFlow<Region?>,
@@ -33,11 +42,36 @@ class LocationViewModel(
                     location?.let { isPointInPolygon(it, region.polygon) } == true
                 }
             }
+                // TODO: Still have the bug where going from A to B to A quickly fades to zero
+                .flatMapLatest {
+                    flow {
+                        val fadeOutJob = launch { musicController.fadeOut(5000) }
+                        try {
+                            // Wait for 5 seconds.
+                            delay(5000)
+                            // If still in the same region after 5 seconds, emit the region.
+                            emit(it)
+                        } catch (e: CancellationException) {
+                            // If the flow is cancelled (i.e. the region changed during the delay),
+                            // execute fadeIn to reverse the fadeOut.
+                            withContext(NonCancellable) {
+                                musicController.fadeIn(500)
+                            }
+                            throw e // Propagate the cancellation.
+                        } finally {
+                            // Ensure the fadeOut job is cancelled if it's still running.
+                            fadeOutJob.cancel()
+                        }
+                    }
+                }
                 .collect { region ->
                     if (_regionFlow.value != region) {
                         musicController.stop()
                         _regionFlow.value = region
-                        region?.musicSource?.let { musicController.play(it, 0) }
+                        region?.musicSource?.let {
+                            musicController.play(it, 0)
+                            musicController.fadeIn(2_000)
+                        }
                     }
                 }
         }

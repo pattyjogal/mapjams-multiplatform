@@ -5,7 +5,7 @@ interface MusicController {
     fun pause()
     fun resume()
     fun stop()
-    fun fadeOut(durationMs: Long)
-    fun fadeIn(durationMs: Long)
+    suspend fun fadeOut(durationMs: Long)
+    suspend fun fadeIn(durationMs: Long)
     fun getCurrentPosition(): Long
 }

@@ -2,8 +2,11 @@ package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.PermissionBridge
 import al.pattyjog.mapjams.PermissionResultCallback
+import al.pattyjog.mapjams.geo.Region
 import android.util.Log
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,8 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -30,6 +36,7 @@ import org.koin.compose.getKoin
 actual fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<al.pattyjog.mapjams.geo.LatLng>,
     onPolygonUpdate: (List<al.pattyjog.mapjams.geo.LatLng>) -> Unit,
+    otherRegions: List<Region>,
 ) {
     var polygon: List<LatLng> by remember { mutableStateOf(initialPolygon.map { LatLng(it.latitude, it.longitude) }) }
 
@@ -42,6 +49,7 @@ actual fun PlatformMapRegionDrawingComponent(
             koin.get<PermissionBridge>().isLocationPermissionGranted()
         )
     }
+
     fun requestPermission() {
         koin.get<PermissionBridge>()
             .requestLocationPermission(object : PermissionResultCallback {
@@ -60,7 +68,19 @@ actual fun PlatformMapRegionDrawingComponent(
     }
 
     val properties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.NORMAL, isMyLocationEnabled = isFineLocationPermissionGranted ))
+        mutableStateOf(MapProperties(mapType = MapType.NORMAL, isMyLocationEnabled = isFineLocationPermissionGranted))
+    }
+
+    LaunchedEffect(Unit) {
+        if (initialPolygon.size >= 2) {
+            val update = CameraUpdateFactory.newLatLngBounds(computeBounds(initialPolygon.map {
+                LatLng(
+                    it.latitude,
+                    it.longitude
+                )
+            })!!, 100)
+            cameraPositionState.animate(update)
+        }
     }
 
     LaunchedEffect(isFineLocationPermissionGranted) {
@@ -68,19 +88,20 @@ actual fun PlatformMapRegionDrawingComponent(
             requestPermission()
         }
     }
-    // GoogleMap composable provided by the Maps Compose library.
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         properties = properties,
         cameraPositionState = cameraPositionState,
         onMapLongClick = {
             polygon += it
-        }
+        },
+        contentPadding = PaddingValues(bottom = 64.dp)
     ) {
-        // You can add markers, polygons, or custom overlays for drawing.
         Polygon(
             points = polygon,
-            fillColor = Color(55, 55, 55, 30)
+            fillColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5F),
+            strokeColor = MaterialTheme.colorScheme.primary
         )
         polygon.mapIndexed { i, position ->
             DraggableMarkerWithEffect(
@@ -91,12 +112,32 @@ actual fun PlatformMapRegionDrawingComponent(
                     }
                 },
                 onDragEnd = {
-                    Log.d("Polygon", "NEW ONE")
                     onPolygonUpdate(polygon.map { al.pattyjog.mapjams.geo.LatLng(it.latitude, it.longitude) })
                 }
             )
         }
+        otherRegions.map { region ->
+            Polygon(
+                points = region.polygon.map { LatLng(it.latitude, it.longitude) },
+                fillColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3F),
+                strokeColor = MaterialTheme.colorScheme.secondary
+            )
+        }
     }
+}
+
+private fun computeBounds(locations: List<LatLng>): LatLngBounds? {
+    if (locations.isEmpty()) return null
+
+    val minLat = locations.minOf { it.latitude }
+    val minLng = locations.minOf { it.longitude }
+    val maxLat = locations.maxOf { it.latitude }
+    val maxLng = locations.maxOf { it.longitude }
+
+    val southwest = LatLng(minLat, minLng)
+    val northeast = LatLng(maxLat, maxLng)
+
+    return LatLngBounds(southwest, northeast)
 }
 
 @OptIn(FlowPreview::class)

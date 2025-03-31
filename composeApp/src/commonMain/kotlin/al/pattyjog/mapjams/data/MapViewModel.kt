@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -60,6 +61,10 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
             repository.updateRegion(region)
             loadMaps()
         }
+    }
+
+    fun getMapForRegion(regionId: String): Map? {
+        return _maps.value.firstOrNull { map -> map.regions.any { it.id == regionId } }
     }
 
     fun getMapById(id: String): Map? {

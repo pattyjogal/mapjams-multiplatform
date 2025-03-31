@@ -5,6 +5,7 @@ import al.pattyjog.mapjams.PermissionResultCallback
 import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.geo.Region
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +39,7 @@ actual fun PlatformMapDisplayComponent(
             koin.get<PermissionBridge>().isLocationPermissionGranted()
         )
     }
+
     fun requestPermission() {
         koin.get<PermissionBridge>()
             .requestLocationPermission(object : PermissionResultCallback {
@@ -81,7 +83,8 @@ actual fun PlatformMapDisplayComponent(
         regions.map { region ->
             Polygon(
                 points = region.polygon.map { com.google.android.gms.maps.model.LatLng(it.latitude, it.longitude) },
-                fillColor = Color.Gray.copy(alpha = 0.5F)
+                fillColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5F),
+                strokeColor = MaterialTheme.colorScheme.primary
             )
         }
     }

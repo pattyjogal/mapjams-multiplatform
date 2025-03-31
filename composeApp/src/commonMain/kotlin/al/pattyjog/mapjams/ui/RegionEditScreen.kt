@@ -32,6 +32,7 @@ fun RegionEditScreen(
     val locationViewModel = koinViewModel<LocationViewModel>()
     val location by locationViewModel.locationFlow.collectAsState()
     val region = vm.getRegionById(initialRegionId)
+    val map = vm.getMapForRegion(initialRegionId)
     if (region != null) {
         var regionState by remember { mutableStateOf(region) }
 
@@ -59,7 +60,8 @@ fun RegionEditScreen(
                     initialPolygon = region.polygon,
                     onPolygonUpdate = {
                         regionState = regionState.copy(polygon = it)
-                    }
+                    },
+                    otherRegions = map?.regions?.filter { it.id != initialRegionId } ?: emptyList()
                 )
             }
         }
