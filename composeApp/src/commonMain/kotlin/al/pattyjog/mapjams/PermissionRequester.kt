@@ -9,9 +9,9 @@ expect interface PermissionsBridgeListener {
     fun isDocumentAccessPermissionGranted(): Boolean
 }
 
-class PermissionBridge {
+class PermissionBridge(
     var listener: PermissionsBridgeListener? = null
-
+) {
     fun requestLocationPermission(callback: PermissionResultCallback) {
         listener?.requestLocationPermission(callback) ?: error("Callback handler not set")
     }

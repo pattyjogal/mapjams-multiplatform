@@ -119,6 +119,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+dependencies {
+    implementation(libs.androidx.runtime.android)
+}
 
 secrets {
     // To add your Maps API key to this project:
