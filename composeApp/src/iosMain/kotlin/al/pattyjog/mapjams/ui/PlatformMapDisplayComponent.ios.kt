@@ -2,6 +2,7 @@ package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.geo.Region
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -91,7 +92,7 @@ actual fun PlatformMapDisplayComponent(
             }
             mapView
         },
-        modifier = Modifier.size(300.dp),
+        modifier = Modifier.fillMaxSize(),
     )
 }
 

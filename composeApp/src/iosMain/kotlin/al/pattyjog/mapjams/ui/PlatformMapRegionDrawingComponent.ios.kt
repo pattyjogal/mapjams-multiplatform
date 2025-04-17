@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.BetaInteropApi
@@ -17,26 +16,38 @@ import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.cValue
 import kotlinx.cinterop.useContents
-import platform.CoreGraphics.CGRectZero
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.Foundation.NSSelectorFromString
+import platform.MapKit.MKAnnotationProtocol
+import platform.MapKit.MKAnnotationView
+import platform.MapKit.MKAnnotationViewDragState
+import platform.MapKit.MKAnnotationViewDragStateCanceling
+import platform.MapKit.MKAnnotationViewDragStateEnding
+import platform.MapKit.MKAnnotationViewDragStateNone
+import platform.MapKit.MKCoordinateRegionForMapRect
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
+import platform.MapKit.MKMapPointForCoordinate
+import platform.MapKit.MKMapRect
+import platform.MapKit.MKMapRectMake
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKOverlayRenderer
+import platform.MapKit.MKPinAnnotationView
 import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolygon
 import platform.MapKit.MKPolygon.Companion.polygonWithCoordinates
 import platform.MapKit.MKPolygonRenderer
+import platform.MapKit.MKUserLocation
 import platform.MapKit.addOverlay
 import platform.MapKit.overlays
-import platform.MapKit.removeOverlay
 import platform.MapKit.removeOverlays
 import platform.UIKit.UIGestureRecognizerStateEnded
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.systemBlueColor
 import platform.darwin.NSObject
+import kotlin.math.max
+import kotlin.math.min
 
 @OptIn(ExperimentalForeignApi::class)
 fun LatLng.toNative(): CValue<CLLocationCoordinate2D> = cValue<CLLocationCoordinate2D> {
@@ -50,7 +61,33 @@ fun List<CValue<CLLocationCoordinate2D>>.toMKPolygon(): MKPolygon? {
     return polygonWithCoordinates(this.toCArray(), count = this.size.toULong())
 }
 
+// Compute a bounding map rect from a list of coords
+@OptIn(ExperimentalForeignApi::class)
+fun List<CValue<CLLocationCoordinate2D>>.toMKMapRect(): CValue<MKMapRect> {
+    if (isEmpty()) return MKMapRectMake(0.0, 0.0, 0.0, 0.0)
+    var minX = Double.MAX_VALUE
+    var minY = Double.MAX_VALUE
+    var maxX = -Double.MAX_VALUE
+    var maxY = -Double.MAX_VALUE
 
+    for (coord in this) {
+        MKMapPointForCoordinate(coord).useContents {
+            minX = min(minX, x); minY = min(minY, y)
+            maxX = max(maxX, x); maxY = max(maxY, y)
+        }
+    }
+    return MKMapRectMake(minX, minY, maxX - minX, maxY - minY)
+}
+
+@OptIn(ExperimentalForeignApi::class)
+class VertexAnnotation(
+    val vertexIndex: Int,
+    coordinate: CValue<CLLocationCoordinate2D>
+) : MKPointAnnotation() {
+    init {
+        this.setCoordinate(coordinate)
+    }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 class MapDelegate(
@@ -59,6 +96,8 @@ class MapDelegate(
 ) : NSObject(), MKMapViewDelegateProtocol {
     private val _nativePolygon = mutableStateListOf<CValue<CLLocationCoordinate2D>>()
     val nativePolygon: List<CValue<CLLocationCoordinate2D>> get() = _nativePolygon
+
+    private var hasCentered = false
 
     fun setInitial(native: List<CValue<CLLocationCoordinate2D>>) {
         _nativePolygon.clear()
@@ -73,7 +112,14 @@ class MapDelegate(
             val pt = gesture.locationInView(mapView)
             val coord = mapView.convertPoint(pt, toCoordinateFromView = mapView)
             _nativePolygon += coord
-            onPolygonUpdate(_nativePolygon.map { x -> x.useContents { LatLng(latitude, longitude) } })
+            onPolygonUpdate(_nativePolygon.map { x ->
+                x.useContents {
+                    LatLng(
+                        latitude,
+                        longitude
+                    )
+                }
+            })
             redrawOverlays()
         }
     }
@@ -88,8 +134,14 @@ class MapDelegate(
     private fun redrawOverlays() {
         // snapshot overlays
         mapView.removeOverlays(mapView.overlays)
+        mapView.removeAnnotations(mapView.annotations)
+
         // Add user polygon
         nativePolygon.toMKPolygon()?.let { mapView.addOverlay(it) }
+        nativePolygon.forEachIndexed { idx, coord ->
+            val ann = VertexAnnotation(idx, coord)
+            mapView.addAnnotation(ann)
+        }
         // Add others
         otherOverlays.forEach { mapView.addOverlay(it) }
     }
@@ -110,6 +162,62 @@ class MapDelegate(
             MKOverlayRenderer(overlay = rendererForOverlay)
         }
     }
+
+    override fun mapView(mapView: MKMapView, didUpdateUserLocation: MKUserLocation) {
+        if (!hasCentered) {
+            hasCentered = true
+            val coord = didUpdateUserLocation.coordinate
+            val region = MKCoordinateRegionMakeWithDistance(
+                coord,    // center on the user
+                1_000.0,  // 1 km north‑south
+                1_000.0   // 1 km east‑west
+            )
+            mapView.setRegion(region, animated = true)
+        }
+    }
+
+    @Suppress("RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    @ObjCSignatureOverride
+    override fun mapView(
+        mapView: MKMapView,
+        viewForAnnotation: MKAnnotationProtocol
+    ): MKAnnotationView? {
+        if (viewForAnnotation is VertexAnnotation) {
+            val id = "vertexPin"
+            val pin = (mapView.dequeueReusableAnnotationViewWithIdentifier(id)
+                    as? MKPinAnnotationView)
+                ?: MKPinAnnotationView(annotation = viewForAnnotation, reuseIdentifier = id).apply {
+                    draggable = true
+                    canShowCallout = false
+                }
+            pin.annotation = viewForAnnotation
+            return pin
+        }
+        return null
+    }
+
+    override fun mapView(
+        mapView: MKMapView,
+        annotationView: MKAnnotationView,
+        didChangeDragState: MKAnnotationViewDragState,
+        fromOldState: MKAnnotationViewDragState
+    ) {
+        // We're only interested when dragging ends
+        if (annotationView.annotation is VertexAnnotation &&
+            (didChangeDragState == MKAnnotationViewDragStateEnding ||
+                    didChangeDragState == MKAnnotationViewDragStateCanceling)
+        ) {
+            val vertexAnn = annotationView.annotation as VertexAnnotation
+            val newCoord = vertexAnn.coordinate
+            // Update our state list in-place
+            _nativePolygon[vertexAnn.vertexIndex] = newCoord
+            // Notify shared code
+            onPolygonUpdate(_nativePolygon.map { it.useContents { LatLng(latitude, longitude) } })
+            // Redraw overlay to follow moved point
+            redrawOverlays()
+            annotationView.dragState = MKAnnotationViewDragStateNone
+        }
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -117,7 +225,7 @@ class MapDelegate(
 actual fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<LatLng>,
     onPolygonUpdate: (List<LatLng>) -> Unit,
-    otherRegions: List<Region>
+    otherRegions: List<Region>,
 ) {
     // Convert shared initialPolygon and otherRegions into native coords/polygons
     val nativeInitial = remember { initialPolygon.map { it.toNative() } }
@@ -139,13 +247,16 @@ actual fun PlatformMapRegionDrawingComponent(
     // Set up mapView once
     LaunchedEffect(mapView) {
         mapView.delegate = delegate
+        mapView.showsUserLocation = true
         // Add long‑press recognizer
-        val longPress = UILongPressGestureRecognizer(target = delegate,
-            action = NSSelectorFromString("handleLongPress:"))
+        val longPress = UILongPressGestureRecognizer(
+            target = delegate,
+            action = NSSelectorFromString("handleLongPress:")
+        )
         mapView.addGestureRecognizer(longPress)
         // Center map initially on first vertex (or skip)
-        nativeInitial.firstOrNull()?.let { center ->
-            val region = MKCoordinateRegionMakeWithDistance(center, 800.0, 800.0)
+        if (nativeInitial.isNotEmpty()) {
+            val region = MKCoordinateRegionForMapRect(nativeInitial.toMKMapRect())
             mapView.setRegion(region, animated = false)
         }
     }

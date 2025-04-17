@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -17,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -47,26 +51,63 @@ fun AppNavigation() {
     val currentRoute = currentBackStackEntry?.destination
 
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text("Map Jams")
+                },
+                navigationIcon = {
+                    if (navController.previousBackStackEntry != null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                }
+            )
+
+        },
         bottomBar = {
             if (bottomBarScreens.any { currentRoute?.hasRoute(it::class) == true }) {
                 NavigationBar {
                     NavigationBarItem(
                         selected = currentRoute!!.hasRoute<Home>(),
-                        onClick = { navController.navigate(Home) },
-                        icon = { Icon(Icons.Filled.Home, contentDescription = "The home map view") },
+                        onClick = {
+                            navController.navigate(Home) {
+                                launchSingleTop = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                Icons.Filled.Home,
+                                contentDescription = "The home map view"
+                            )
+                        },
                         label = { Text("Go") }
                     )
                     NavigationBarItem(
                         selected = currentRoute.hasRoute<MapList>(),
-                        onClick = { navController.navigate(MapList) },
-                        icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "List of all maps") },
+                        onClick = {
+                            navController.navigate(MapList) {
+                                launchSingleTop = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.List,
+                                contentDescription = "List of all maps"
+                            )
+                        },
                         label = { Text("Maps") }
                     )
                 }
             }
         }
     ) { padding ->
-        NavHost(navController = navController, startDestination = Home, modifier = Modifier.padding(padding)) {
+        NavHost(
+            navController = navController,
+            startDestination = Home,
+            modifier = Modifier.padding(padding)
+        ) {
             composable<Home> {
                 Home()
             }
