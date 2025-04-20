@@ -6,7 +6,7 @@ import android.util.Log
 import org.koin.core.context.GlobalContext
 import androidx.core.net.toUri
 
-actual fun getMp3Metadata(musicSource: MusicSource.Local): Metadata {
+actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? {
     val context: Context = GlobalContext.get().get()
     val retriever = MediaMetadataRetriever()
     try {
@@ -19,7 +19,7 @@ actual fun getMp3Metadata(musicSource: MusicSource.Local): Metadata {
         }
     } catch (e: Exception) {
         Log.e("getMp3Metadata", "Encountered error while extracting metadata", e)
-        return Metadata()
+        return null
     } finally {
         retriever.release()
     }

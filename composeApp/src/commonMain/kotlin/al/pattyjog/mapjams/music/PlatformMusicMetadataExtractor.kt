@@ -5,4 +5,4 @@ data class Metadata(
     val artist: String = "Unknown Artist"
 )
 
-expect fun getMp3Metadata(musicSource: MusicSource.Local): Metadata
+expect suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata?

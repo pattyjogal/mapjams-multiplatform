@@ -78,7 +78,7 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
             mapId = map.id,
             name = region.name,
             polygon = serializePolygon(region.polygon),
-            musicSource = region.musicSource.toString()
+            musicSource = region.musicSource?.toString()
         )
     }
 
