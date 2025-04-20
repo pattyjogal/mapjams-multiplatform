@@ -14,7 +14,6 @@ import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.ObjCSignatureOverride
-import kotlinx.cinterop.cValue
 import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.Foundation.NSSelectorFromString
@@ -26,17 +25,12 @@ import platform.MapKit.MKAnnotationViewDragStateEnding
 import platform.MapKit.MKAnnotationViewDragStateNone
 import platform.MapKit.MKCoordinateRegionForMapRect
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
-import platform.MapKit.MKMapPointForCoordinate
-import platform.MapKit.MKMapRect
-import platform.MapKit.MKMapRectMake
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKOverlayRenderer
 import platform.MapKit.MKPinAnnotationView
-import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolygon
-import platform.MapKit.MKPolygon.Companion.polygonWithCoordinates
 import platform.MapKit.MKPolygonRenderer
 import platform.MapKit.MKUserLocation
 import platform.MapKit.addOverlay
@@ -46,48 +40,6 @@ import platform.UIKit.UIGestureRecognizerStateEnded
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.systemBlueColor
 import platform.darwin.NSObject
-import kotlin.math.max
-import kotlin.math.min
-
-@OptIn(ExperimentalForeignApi::class)
-fun LatLng.toNative(): CValue<CLLocationCoordinate2D> = cValue<CLLocationCoordinate2D> {
-    latitude = this@toNative.latitude
-    longitude = this@toNative.longitude
-}
-
-@OptIn(ExperimentalForeignApi::class)
-fun List<CValue<CLLocationCoordinate2D>>.toMKPolygon(): MKPolygon? {
-    if (this.isEmpty()) return null
-    return polygonWithCoordinates(this.toCArray(), count = this.size.toULong())
-}
-
-// Compute a bounding map rect from a list of coords
-@OptIn(ExperimentalForeignApi::class)
-fun List<CValue<CLLocationCoordinate2D>>.toMKMapRect(): CValue<MKMapRect> {
-    if (isEmpty()) return MKMapRectMake(0.0, 0.0, 0.0, 0.0)
-    var minX = Double.MAX_VALUE
-    var minY = Double.MAX_VALUE
-    var maxX = -Double.MAX_VALUE
-    var maxY = -Double.MAX_VALUE
-
-    for (coord in this) {
-        MKMapPointForCoordinate(coord).useContents {
-            minX = min(minX, x); minY = min(minY, y)
-            maxX = max(maxX, x); maxY = max(maxY, y)
-        }
-    }
-    return MKMapRectMake(minX, minY, maxX - minX, maxY - minY)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-class VertexAnnotation(
-    val vertexIndex: Int,
-    coordinate: CValue<CLLocationCoordinate2D>
-) : MKPointAnnotation() {
-    init {
-        this.setCoordinate(coordinate)
-    }
-}
 
 @OptIn(ExperimentalForeignApi::class)
 class MapDelegate(

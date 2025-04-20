@@ -26,13 +26,19 @@ import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
+import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKOverlayRenderer
 import platform.MapKit.MKOverlayView
+import platform.MapKit.MKPointOfInterestCategory
+import platform.MapKit.MKPointOfInterestFilter
 import platform.MapKit.MKPolygon
 import platform.MapKit.MKPolygonRenderer
+import platform.MapKit.MKStandardMapConfiguration
+import platform.MapKit.MKUserLocation
+import platform.MapKit.addOverlay
 import platform.darwin.NSObject
 import platform.posix.memcpy
 
@@ -60,7 +66,10 @@ actual fun PlatformMapDisplayComponent(
                 longitude = latLng.longitude
             }
         }.toCArray()
-        platform.MapKit.MKPolygon.polygonWithCoordinates(coordinates, count = region.polygon.size.toULong())
+        platform.MapKit.MKPolygon.polygonWithCoordinates(
+            coordinates,
+            count = region.polygon.size.toULong()
+        )
     }
 
     val nativeLocation = cValue<CLLocationCoordinate2D> {
@@ -72,6 +81,17 @@ actual fun PlatformMapDisplayComponent(
         factory = {
             val mapView = MKMapView()
             mapView.delegate = object : MKMapViewDelegateProtocol, NSObject() {
+                override fun mapView(mapView: MKMapView, didUpdateUserLocation: MKUserLocation) {
+                    val coord = didUpdateUserLocation.coordinate
+                    val region = MKCoordinateRegionMakeWithDistance(
+                        coord,    // center on the user
+                        500.0,
+                        500.0
+                    )
+                    mapView.setRegion(region, animated = true)
+
+                }
+
                 @Suppress("RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
                 @ObjCSignatureOverride
                 override fun mapView(
@@ -81,15 +101,24 @@ actual fun PlatformMapDisplayComponent(
                     return when (val overlay = rendererForOverlay as? MKPolygon) {
                         is MKPolygon -> {
                             val renderer = MKPolygonRenderer(overlay)
-                            renderer.fillColor = platform.UIKit.UIColor.blueColor().colorWithAlphaComponent(0.2) // Example
+                            renderer.fillColor = platform.UIKit.UIColor.blueColor()
+                                .colorWithAlphaComponent(0.2) // Example
                             renderer.strokeColor = platform.UIKit.UIColor.blueColor()
                             renderer.lineWidth = 2.0
                             renderer
                         }
+
                         else -> MKOverlayRenderer(overlay!!)
                     }
                 }
             }
+            mapView.showsUserLocation = true
+            regions.forEach { region ->
+                region.polygon.map { it.toNative() }.toMKPolygon()?.let { mapView.addOverlay(it) }
+            }
+            val configuration = MKStandardMapConfiguration()
+            configuration.pointOfInterestFilter = MKPointOfInterestFilter(includingCategories = emptyList<MKPointOfInterestCategory>())
+            mapView.preferredConfiguration = configuration
             mapView
         },
         modifier = Modifier.fillMaxSize(),
