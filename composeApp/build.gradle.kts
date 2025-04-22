@@ -85,6 +85,7 @@ kotlin {
             api(libs.permissions.compose)
             implementation(libs.permissions.location)
 
+            implementation(libs.kermit)
         }
 
         iosMain.dependencies {

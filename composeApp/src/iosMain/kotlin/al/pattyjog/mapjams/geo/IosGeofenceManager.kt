@@ -1,5 +1,6 @@
 package al.pattyjog.mapjams.geo
 
+import co.touchlab.kermit.Logger
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.flow.Flow
@@ -62,10 +63,12 @@ class IosGeofenceManager : GeofenceManager(), KoinComponent {
 
         locationManager.startUpdatingLocation()
         _isTracking.value = true
+        Logger.d { "Started monitoring user location" }
     }
 
     override fun stopMonitoring() {
         locationManager.stopUpdatingLocation()
         _isTracking.value = false
+        Logger.d { "Stopped monitoring user location" }
     }
 }
