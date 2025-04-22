@@ -26,6 +26,7 @@ import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
+import platform.MapKit.MKClusterAnnotation
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
@@ -38,7 +39,10 @@ import platform.MapKit.MKPolygon
 import platform.MapKit.MKPolygonRenderer
 import platform.MapKit.MKStandardMapConfiguration
 import platform.MapKit.MKUserLocation
+import platform.MapKit.MKUserLocationView
+import platform.MapKit.MKUserTrackingButton
 import platform.MapKit.addOverlay
+import platform.UIKit.NSLayoutConstraint
 import platform.darwin.NSObject
 import platform.posix.memcpy
 
@@ -58,25 +62,6 @@ actual fun PlatformMapDisplayComponent(
     regions: List<Region>,
     currentLocation: LatLng
 ) {
-    val mkPolygons = regions.map { region ->
-
-        val coordinates = region.polygon.map { latLng ->
-            cValue<CLLocationCoordinate2D> {
-                latitude = latLng.latitude
-                longitude = latLng.longitude
-            }
-        }.toCArray()
-        platform.MapKit.MKPolygon.polygonWithCoordinates(
-            coordinates,
-            count = region.polygon.size.toULong()
-        )
-    }
-
-    val nativeLocation = cValue<CLLocationCoordinate2D> {
-        latitude = currentLocation.latitude
-        longitude = currentLocation.longitude
-    }
-
     UIKitView(
         factory = {
             val mapView = MKMapView()
@@ -89,7 +74,20 @@ actual fun PlatformMapDisplayComponent(
                         500.0
                     )
                     mapView.setRegion(region, animated = true)
+                }
 
+                // Stops the user popup from showing if blue dot is clicked
+                @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+                @ObjCSignatureOverride
+                override fun mapView(
+                    mapView: MKMapView,
+                    didSelectAnnotationView: MKAnnotationView
+                ) {
+                    when (val annotation = didSelectAnnotationView.annotation) {
+                        is MKUserLocation -> {
+                            mapView.deselectAnnotation(annotation, animated = false)
+                        }
+                    }
                 }
 
                 @Suppress("RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
@@ -101,9 +99,9 @@ actual fun PlatformMapDisplayComponent(
                     return when (val overlay = rendererForOverlay as? MKPolygon) {
                         is MKPolygon -> {
                             val renderer = MKPolygonRenderer(overlay)
-                            renderer.fillColor = platform.UIKit.UIColor.blueColor()
+                            renderer.fillColor = platform.UIKit.UIColor.orangeColor()
                                 .colorWithAlphaComponent(0.2) // Example
-                            renderer.strokeColor = platform.UIKit.UIColor.blueColor()
+                            renderer.strokeColor = platform.UIKit.UIColor.orangeColor()
                             renderer.lineWidth = 2.0
                             renderer
                         }
@@ -117,8 +115,22 @@ actual fun PlatformMapDisplayComponent(
                 region.polygon.map { it.toNative() }.toMKPolygon()?.let { mapView.addOverlay(it) }
             }
             val configuration = MKStandardMapConfiguration()
-            configuration.pointOfInterestFilter = MKPointOfInterestFilter(includingCategories = emptyList<MKPointOfInterestCategory>())
+            configuration.pointOfInterestFilter =
+                MKPointOfInterestFilter(includingCategories = emptyList<MKPointOfInterestCategory>())
             mapView.preferredConfiguration = configuration
+
+            val trackingButton = MKUserTrackingButton.userTrackingButtonWithMapView(mapView).apply {
+                translatesAutoresizingMaskIntoConstraints = false
+            }
+
+            mapView.addSubview(trackingButton)
+
+            val guide = mapView.safeAreaLayoutGuide
+            NSLayoutConstraint.activateConstraints(listOf(
+                trackingButton.trailingAnchor().constraintEqualToAnchor(guide.trailingAnchor, constant = -16.0),
+                trackingButton.bottomAnchor().constraintEqualToAnchor(guide.bottomAnchor, constant = -16.0)
+            ))
+
             mapView
         },
         modifier = Modifier.fillMaxSize(),
