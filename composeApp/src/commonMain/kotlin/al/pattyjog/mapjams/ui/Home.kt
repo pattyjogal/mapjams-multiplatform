@@ -38,16 +38,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 
 @Composable
 fun Home() {
-    var checked by remember { mutableStateOf(false) }
     val geofenceManager: GeofenceManager = koinInject()
+    val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
+    var checked by remember { mutableStateOf(isTrackingLocation) }
+
     val locationViewModel: LocationViewModel = koinInject()
     val mapViewModel: MapViewModel = koinInject()
-    val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
     val location by locationViewModel.locationFlow.collectAsState() // TODO: Tabbing back goes back to this default
     val activeMap by locationViewModel.activeMapFlow.collectAsState()
     val activeRegion by locationViewModel.regionFlow.collectAsState()
@@ -122,21 +124,8 @@ fun Home() {
         }
     }
 
-    LaunchedEffect(
-        checked,
-        isFineLocationPermissionGranted,
-        isBackgroundLocationPermissionGranted,
-        isDocumentAccessPermissionGranted,
-        isDocumentAccessPermissionNeeded
-    ) {
-        if (isFineLocationPermissionGranted && isBackgroundLocationPermissionGranted && (!isDocumentAccessPermissionNeeded || isDocumentAccessPermissionGranted)) {
-            if (checked) {
-                geofenceManager.startMonitoring()
-            } else {
-                geofenceManager.stopMonitoring()
-            }
-        }
-
+    LaunchedEffect(isTrackingLocation) {
+        checked = isTrackingLocation
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -169,6 +158,7 @@ fun Home() {
         ) {
             Box(modifier = Modifier.padding(16.dp).fillMaxSize()) {
                 Column {
+                    Text("Is tracking location: $isTrackingLocation")
                     if (checked) {
                         Text("Region", style = AppTypography.labelSmall)
                         Text(activeRegion?.name ?: "--", style = AppTypography.headlineMedium)
@@ -187,7 +177,17 @@ fun Home() {
                     onCheckedChange = {
                         checked = it
                         if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted || (isDocumentAccessPermissionNeeded && !isDocumentAccessPermissionGranted)) {
+                            checked = false
                             requestPermission()
+                            Logger.v { "Requesting permission" }
+                        } else {
+                            if (checked && !isTrackingLocation) {
+                                Logger.v { "Requesting start monitoring" }
+                                geofenceManager.startMonitoring()
+                            } else if (!checked && isTrackingLocation) {
+                                Logger.v { "Requesting stop monitoring" }
+                                geofenceManager.stopMonitoring()
+                            }
                         }
                     },
                     checked = checked

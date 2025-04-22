@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -40,9 +41,10 @@ class LocationViewModel(
                 val activeRegions = activeMap?.regions ?: emptyList()
                 activeRegions.firstOrNull { region ->
                     location?.let { isPointInPolygon(it, region.polygon) } == true
-                }.also { Logger.v("Active region: $it") }
+                }.also { Logger.v("Active region: ${it.hashCode()}") }
             }
                 .distinctUntilChanged()
+                .drop(1)
                 // TODO: Still have the bug where going from A to B to A quickly fades to zero
                 .flatMapLatest {
                     flow {
