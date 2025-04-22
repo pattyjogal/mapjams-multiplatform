@@ -1,22 +1,28 @@
 package al.pattyjog.mapjams.music
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.refTo
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.skia.Image
 import platform.AVFoundation.AVAsset
 import platform.AVFoundation.AVKeyValueStatusLoaded
 import platform.AVFoundation.AVMetadataCommonKeyArtist
+import platform.AVFoundation.AVMetadataCommonKeyArtwork
 import platform.AVFoundation.AVMetadataCommonKeyTitle
-import platform.AVFoundation.AVMetadataFormat
-import platform.AVFoundation.AVMetadataFormatID3Metadata
 import platform.AVFoundation.AVMetadataItem
 import platform.AVFoundation.commonKey
 import platform.AVFoundation.commonMetadata
-import platform.AVFoundation.loadMetadataForFormat
+import platform.AVFoundation.dataValue
 import platform.AVFoundation.stringValue
-import platform.CoreMedia.kCMMetadataFormatType_ID3
 import platform.Foundation.NSURL
+import platform.posix.memcpy
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asComposeImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.Bitmap
 
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
@@ -37,10 +43,22 @@ actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
                     val artistItem = items.firstOrNull {
                         it.commonKey == AVMetadataCommonKeyArtist
                     }
+                    val albumArt = items.firstOrNull {
+                        it.commonKey == AVMetadataCommonKeyArtwork
+                    }
                     val title = titleItem?.stringValue ?: "Unknown Title"
                     val artist = artistItem?.stringValue ?: "Unknown Artist"
+                    val artwork = albumArt?.dataValue?.let { data ->
+                        data.bytes?.let { bytesPtr ->
+                            ByteArray(data.length.toInt()).also { array ->
+                                memScoped {
+                                    memcpy(array.refTo(0), bytesPtr, data.length)
+                                }
+                            }
+                        }
+                    }
 
-                    cont.resume(Metadata(title, artist))
+                    cont.resume(Metadata(title, artist, artwork))
                 } else {
                     cont.resumeWithException(
                         Exception("Failed to load metadata (status=$status), ${musicSource.file}")

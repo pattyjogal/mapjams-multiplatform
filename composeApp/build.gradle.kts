@@ -61,6 +61,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material)
             implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(libs.navigation.compose)
@@ -122,6 +123,8 @@ android {
 }
 dependencies {
     implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.ui.graphics.android)
+    implementation(libs.androidx.foundation.layout.android)
 }
 
 secrets {
