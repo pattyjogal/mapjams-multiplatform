@@ -9,12 +9,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
+import app.lexilabs.basic.haptic.Haptic
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.useContents
+import org.koin.compose.getKoin
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.Foundation.NSSelectorFromString
 import platform.MapKit.MKAnnotationProtocol
@@ -44,7 +46,8 @@ import platform.darwin.NSObject
 @OptIn(ExperimentalForeignApi::class)
 class MapDelegate(
     private val mapView: MKMapView,
-    private val onPolygonUpdate: (List<LatLng>) -> Unit
+    private val onPolygonUpdate: (List<LatLng>) -> Unit,
+    private val haptic: Haptic,
 ) : NSObject(), MKMapViewDelegateProtocol {
     private val _nativePolygon = mutableStateListOf<CValue<CLLocationCoordinate2D>>()
     val nativePolygon: List<CValue<CLLocationCoordinate2D>> get() = _nativePolygon
@@ -61,6 +64,7 @@ class MapDelegate(
     @ObjCAction
     fun handleLongPress(gesture: UILongPressGestureRecognizer) {
         if (gesture.state == UIGestureRecognizerStateEnded) {
+            haptic.vibrate(Haptic.DEFAULTS.CLICK)
             val pt = gesture.locationInView(mapView)
             val coord = mapView.convertPoint(pt, toCoordinateFromView = mapView)
             _nativePolygon += coord
@@ -179,6 +183,8 @@ actual fun PlatformMapRegionDrawingComponent(
     onPolygonUpdate: (List<LatLng>) -> Unit,
     otherRegions: List<Region>,
 ) {
+    val koin = getKoin()
+
     // Convert shared initialPolygon and otherRegions into native coords/polygons
     val nativeInitial = remember { initialPolygon.map { it.toNative() } }
     val nativeOthers = remember(otherRegions) {
@@ -190,7 +196,7 @@ actual fun PlatformMapRegionDrawingComponent(
     // Remember single mapView + delegate for lifetime of this Composable
     val mapView = remember { MKMapView() }
     val delegate = remember {
-        MapDelegate(mapView, onPolygonUpdate = onPolygonUpdate).apply {
+        MapDelegate(mapView, onPolygonUpdate = onPolygonUpdate, haptic = koin.get()).apply {
             setInitial(nativeInitial)
             otherOverlays = nativeOthers
         }

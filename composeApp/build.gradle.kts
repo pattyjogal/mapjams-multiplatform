@@ -87,6 +87,8 @@ kotlin {
             implementation(libs.permissions.location)
 
             implementation(libs.kermit)
+
+            implementation(libs.basic.haptic)
         }
 
         iosMain.dependencies {

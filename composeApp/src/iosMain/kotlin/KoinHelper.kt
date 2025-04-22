@@ -7,6 +7,7 @@ import al.pattyjog.mapjams.music.IosMusicController
 import al.pattyjog.mapjams.music.MusicController
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import app.lexilabs.basic.haptic.Haptic
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
@@ -23,6 +24,8 @@ val iosModule = module {
     }
 
     single<PermissionBridge> { PermissionBridge(NoOpPermissionsBridgeListener()) }
+
+    single<Haptic> { Haptic(0) }
 }
 
 fun initKoin() {

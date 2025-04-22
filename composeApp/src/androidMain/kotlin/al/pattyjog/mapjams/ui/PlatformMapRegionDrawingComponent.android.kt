@@ -2,6 +2,7 @@ package al.pattyjog.mapjams.ui
 
 import al.pattyjog.mapjams.PermissionBridge
 import al.pattyjog.mapjams.PermissionResultCallback
+import al.pattyjog.mapjams.PlatformHaptic
 import al.pattyjog.mapjams.geo.Region
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.lexilabs.basic.haptic.Haptic
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -49,6 +51,8 @@ actual fun PlatformMapRegionDrawingComponent(
             koin.get<PermissionBridge>().isLocationPermissionGranted()
         )
     }
+
+    val haptic = koin.get<PlatformHaptic>()
 
     fun requestPermission() {
         koin.get<PermissionBridge>()
@@ -95,6 +99,7 @@ actual fun PlatformMapRegionDrawingComponent(
         cameraPositionState = cameraPositionState,
         onMapLongClick = {
             polygon += it
+            haptic.shortBuzz()
         },
         contentPadding = PaddingValues(bottom = 64.dp)
     ) {
