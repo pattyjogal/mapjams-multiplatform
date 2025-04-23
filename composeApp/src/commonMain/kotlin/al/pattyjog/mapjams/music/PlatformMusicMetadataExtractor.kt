@@ -1,7 +1,5 @@
 package al.pattyjog.mapjams.music
 
-import androidx.compose.ui.graphics.ImageBitmap
-
 data class Metadata(
     val title: String = "Unknown Title",
     val artist: String = "Unknown Artist",

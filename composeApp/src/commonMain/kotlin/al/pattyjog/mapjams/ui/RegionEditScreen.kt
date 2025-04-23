@@ -3,9 +3,12 @@ package al.pattyjog.mapjams.ui
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.music.Metadata
+import al.pattyjog.mapjams.ui.components.DefaultAlbumArt
 import al.pattyjog.mapjams.ui.components.LocalSongPicker
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
@@ -67,13 +72,15 @@ fun RegionEditScreen(
                         onRegionSave(regionState)
                     }
                 ) {
-                    Icon(Icons.Filled.Check, "Save region")
+                    Icon(Icons.Filled.Save, "Save region")
                 }
             }
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Column(Modifier.padding(horizontal = 8.dp)) {
-                    TextField(value = regionState.name, onValueChange = { regionState = regionState.copy(name = it) })
+                    TextField(
+                        value = regionState.name,
+                        onValueChange = { regionState = regionState.copy(name = it) })
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
@@ -86,7 +93,7 @@ fun RegionEditScreen(
                                     contentDescription = "",
                                     modifier = Modifier.size(96.dp)
                                 )
-                            }
+                            } ?: DefaultAlbumArt()
                             Spacer(Modifier.width(8.dp))
                             Column {
                                 metadata.value?.let {
