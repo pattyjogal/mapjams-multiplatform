@@ -8,19 +8,39 @@ import al.pattyjog.mapjams.geo.LatLng
 import al.pattyjog.mapjams.music.MusicSource
 import al.pattyjog.mapjams.ui.theme.AppTheme
 import al.pattyjog.mapjams.ui.theme.AppTypography
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -36,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
@@ -50,7 +71,7 @@ fun Home() {
 
     val locationViewModel: LocationViewModel = koinInject()
     val mapViewModel: MapViewModel = koinInject()
-    val location by locationViewModel.locationFlow.collectAsState() // TODO: Tabbing back goes back to this default
+    val location by locationViewModel.locationFlow.collectAsState()
     val activeMap by locationViewModel.activeMapFlow.collectAsState()
     val activeRegion by locationViewModel.regionFlow.collectAsState()
 
@@ -101,6 +122,7 @@ fun Home() {
                 override fun onPermissionDenied(
                     isPermanentDenied: Boolean
                 ) {
+                    Logger.w { "Background location permission denied. Permanent? $isPermanentDenied" }
                     isBackgroundLocationPermissionGranted =
                         koin.get<PermissionBridge>().isBackgroundLocationPermissionGranted()
                 }
@@ -150,36 +172,86 @@ fun Home() {
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .height(160.dp)
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp),
             elevation = CardDefaults.elevatedCardElevation(
                 defaultElevation = 10.dp
             )
         ) {
-            Box(modifier = Modifier.padding(16.dp).fillMaxSize()) {
-                Column {
-                    Text("Is tracking location: $isTrackingLocation")
-                    if (checked) {
-                        Text("Region", style = AppTypography.labelSmall)
-                        Text(activeRegion?.name ?: "--", style = AppTypography.headlineMedium)
-//                            } else {
-//                                LinearProgressIndicator(
-//                                    modifier = Modifier.width(128.dp).padding(top = 8.dp),
-//                                    color = MaterialTheme.colorScheme.secondary,
-//                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-//                                )
+            Row(
+                modifier = Modifier.padding(16.dp).fillMaxWidth().heightIn(min = 128.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted) {
+                        Text(
+                            "MapJams requires background location permissions to function. Location is only monitored when the switch is toggled.",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        if (!isFineLocationPermissionGranted) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Rounded.Warning, contentDescription = "Permission issue")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Location permissions are not granted. Please grant precise location permissions when prompted.",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                        if (!isBackgroundLocationPermissionGranted) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Rounded.Warning, contentDescription = "Permission issue")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Background location permissions are not granted. Please select \"Allow all the time\" when prompted.",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    } else {
+                        AnimatedContent(
+                            targetState = checked,
+                            transitionSpec = {
+                                (fadeIn() + slideInHorizontally()).togetherWith(fadeOut() + slideOutHorizontally())
+                            }) { targetChecked ->
+                            if (targetChecked) {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("Region", style = AppTypography.labelSmall)
+                                    Text(
+                                        activeRegion?.name ?: "--",
+                                        style = AppTypography.headlineMedium
+                                    )
+                                }
+                            } else {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.height(128.dp)
+                                ) {
+                                    Text(
+                                        text = "Ready for an adventure?",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        fontStyle = FontStyle.Italic,
+                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
-
                 Switch(
-                    modifier = Modifier.align(Alignment.CenterEnd),
+                    modifier = Modifier.align(Alignment.CenterVertically),
                     onCheckedChange = {
                         checked = it
                         if (!isFineLocationPermissionGranted || !isBackgroundLocationPermissionGranted || (isDocumentAccessPermissionNeeded && !isDocumentAccessPermissionGranted)) {
                             checked = false
                             requestPermission()
-                            Logger.v { "Requesting permission" }
+                            Logger.v { "Requesting permission: isFineLocationPermissionGranted: $isFineLocationPermissionGranted" }
+                            Logger.v { "Requesting permission: isBackgroundLocationPermissionGranted: $isBackgroundLocationPermissionGranted" }
+                            Logger.v { "Requesting permission: isDocumentAccessPermissionNeeded: $isDocumentAccessPermissionNeeded, isDocumentAccessPermissionGranted: $isDocumentAccessPermissionGranted" }
                         } else {
                             if (checked && !isTrackingLocation) {
                                 Logger.v { "Requesting start monitoring" }

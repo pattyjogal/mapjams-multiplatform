@@ -24,8 +24,6 @@ val iosModule = module {
     }
 
     single<PermissionBridge> { PermissionBridge(NoOpPermissionsBridgeListener()) }
-
-    single<Haptic> { Haptic(0) }
 }
 
 fun initKoin() {

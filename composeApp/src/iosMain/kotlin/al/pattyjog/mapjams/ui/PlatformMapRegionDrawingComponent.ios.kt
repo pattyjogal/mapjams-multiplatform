@@ -47,7 +47,6 @@ import platform.darwin.NSObject
 class MapDelegate(
     private val mapView: MKMapView,
     private val onPolygonUpdate: (List<LatLng>) -> Unit,
-    private val haptic: Haptic,
 ) : NSObject(), MKMapViewDelegateProtocol {
     private val _nativePolygon = mutableStateListOf<CValue<CLLocationCoordinate2D>>()
     val nativePolygon: List<CValue<CLLocationCoordinate2D>> get() = _nativePolygon
@@ -64,7 +63,6 @@ class MapDelegate(
     @ObjCAction
     fun handleLongPress(gesture: UILongPressGestureRecognizer) {
         if (gesture.state == UIGestureRecognizerStateEnded) {
-            haptic.vibrate(Haptic.DEFAULTS.CLICK)
             val pt = gesture.locationInView(mapView)
             val coord = mapView.convertPoint(pt, toCoordinateFromView = mapView)
             _nativePolygon += coord
@@ -196,7 +194,7 @@ actual fun PlatformMapRegionDrawingComponent(
     // Remember single mapView + delegate for lifetime of this Composable
     val mapView = remember { MKMapView() }
     val delegate = remember {
-        MapDelegate(mapView, onPolygonUpdate = onPolygonUpdate, haptic = koin.get()).apply {
+        MapDelegate(mapView, onPolygonUpdate = onPolygonUpdate).apply {
             setInitial(nativeInitial)
             otherOverlays = nativeOthers
         }

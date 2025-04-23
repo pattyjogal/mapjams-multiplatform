@@ -114,12 +114,12 @@ class MainActivity : ComponentActivity(), PermissionsBridgeListener {
             }
 
             shouldShowRequestPermissionRationale(permission) -> {
-                callback.onPermissionDenied(false)
+                backgroundLocationPermissionResultCallback = callback
+                requestBackgroundLocationPermissionLauncher.launch(permission)
             }
 
             else -> {
-                backgroundLocationPermissionResultCallback = callback
-                requestBackgroundLocationPermissionLauncher.launch(permission)
+                callback.onPermissionDenied(false)
             }
         }
     }

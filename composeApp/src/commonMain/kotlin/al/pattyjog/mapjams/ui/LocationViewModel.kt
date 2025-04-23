@@ -38,6 +38,7 @@ class LocationViewModel(
                 _locationFlow,
                 _activeMapFlow
             ) { location, activeMap ->
+                Logger.v { "Location: $location" }
                 val activeRegions = activeMap?.regions ?: emptyList()
                 activeRegions.firstOrNull { region ->
                     location?.let { isPointInPolygon(it, region.polygon) } == true
