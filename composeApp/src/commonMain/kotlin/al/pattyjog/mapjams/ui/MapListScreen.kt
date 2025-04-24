@@ -35,9 +35,9 @@ import kotlin.uuid.Uuid
 @Composable
 @Preview
 fun MapListScreen(
-    onMapClick: (Map) -> Unit
+    onMapClick: (Map) -> Unit,
+    vm: MapViewModel
 ) {
-    val vm = koinViewModel<MapViewModel>()
     val maps by vm.maps.collectAsState()
 
     Scaffold(

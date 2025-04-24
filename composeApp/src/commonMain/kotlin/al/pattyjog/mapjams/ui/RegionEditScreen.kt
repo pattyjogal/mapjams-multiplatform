@@ -47,9 +47,9 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RegionEditScreen(
     initialRegionId: String,
-    onRegionSave: (Region) -> Unit
+    onRegionSave: (Region) -> Unit,
+    vm: MapViewModel
 ) {
-    val vm = koinViewModel<MapViewModel>()
     val metadata = remember { mutableStateOf<Metadata?>(null) }
     val locationViewModel = koinViewModel<LocationViewModel>()
     val location by locationViewModel.locationFlow.collectAsState()

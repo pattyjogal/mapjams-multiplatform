@@ -5,6 +5,7 @@ import al.pattyjog.mapjams.geo.Map
 import al.pattyjog.mapjams.geo.Region
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -25,7 +26,10 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
 
     private fun loadMaps() {
         viewModelScope.launch {
-            _maps.value = repository.getMaps()
+            Logger.d { "Loading maps" }
+            val ref = repository.getMaps()
+            _maps.value = ref
+            Logger.d { "Loaded maps" }
         }
     }
 
@@ -58,6 +62,7 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
 
     fun updateRegion(region: Region) {
         viewModelScope.launch {
+            Logger.v { "Updating region: $region" }
             repository.updateRegion(region)
             loadMaps()
         }

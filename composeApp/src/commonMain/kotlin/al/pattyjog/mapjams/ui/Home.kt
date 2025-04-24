@@ -70,7 +70,6 @@ fun Home() {
     var checked by remember { mutableStateOf(isTrackingLocation) }
 
     val locationViewModel: LocationViewModel = koinInject()
-    val mapViewModel: MapViewModel = koinInject()
     val location by locationViewModel.locationFlow.collectAsState()
     val activeMap by locationViewModel.activeMapFlow.collectAsState()
     val activeRegion by locationViewModel.regionFlow.collectAsState()

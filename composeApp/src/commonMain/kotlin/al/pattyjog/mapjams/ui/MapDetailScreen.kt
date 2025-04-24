@@ -31,12 +31,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -50,17 +56,20 @@ import kotlin.uuid.Uuid
 fun MapDetailScreen(
     mapId: String,
     onRegionEdit: (Region) -> Unit,
+    vm: MapViewModel
 ) {
-    val vm = koinViewModel<MapViewModel>()
-    val maps by vm.maps.collectAsState()
+    val maps by vm.maps.collectAsStateWithLifecycle()
+
+    LaunchedEffect(maps) {
+        Logger.v { "Maps: ${maps.hashCode()}" }
+    }
+
     val map = maps.firstOrNull { it.id == mapId }
-
-    var regionsWithMetadata: List<Pair<Region, Metadata?>>? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(map) {
-        regionsWithMetadata = map?.regions?.map { region ->
-            region to region.musicSource?.getMetadata()
-        }
+    val regionsWithMetadata by produceState<List<Pair<Region, Metadata?>>>(initialValue = emptyList(), map) {
+        value = map?.regions?.map { region ->
+            val metadata = region.musicSource?.getMetadata()
+            region to metadata
+        } ?: emptyList()
     }
 
     Scaffold(
@@ -83,54 +92,49 @@ fun MapDetailScreen(
             }
         }
     ) {
-        if (regionsWithMetadata != null) {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(regionsWithMetadata!!) { (region, metadata) ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable { onRegionEdit(region) }
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(regionsWithMetadata, key = { it.first.id }) { (region, metadata) ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable { onRegionEdit(region) }
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(text = region.name, style = MaterialTheme.typography.titleLarge)
-                            if (metadata != null) {
-                                Row {
-                                    metadata.artwork?.let { artworkData ->
-                                        Image(
-                                            bitmap = artworkData.decodeToImageBitmap(),
-                                            contentDescription = "Album artwork",
-                                            modifier = Modifier.size(48.dp)
-                                        )
-                                    } ?: DefaultAlbumArt(48.dp)
-                                    Spacer(Modifier.width(8.dp))
-                                    Column {
-                                        Text(
-                                            metadata.title,
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        Text(
-                                            metadata.artist,
-                                            style = MaterialTheme.typography.titleSmall
-                                        )
+                        Text(text = region.name, style = MaterialTheme.typography.titleLarge)
+                        if (metadata != null) {
+                            Row {
+                                metadata.artwork?.let { artworkData ->
+                                    Image(
+                                        bitmap = artworkData.decodeToImageBitmap(),
+                                        contentDescription = "Album artwork",
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                } ?: DefaultAlbumArt(48.dp)
+                                Spacer(Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        metadata.title,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        metadata.artist,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
 
-                                    }
                                 }
-                            } else if (region.musicSource == null) {
-                                Text("No song selected")
-                            } else {
-                                Text("...")
                             }
+                        } else if (region.musicSource == null) {
+                            Text("No song selected")
+                        } else {
+                            Text("...")
                         }
                     }
                 }
             }
-
-        } else {
-            Text("Map not found")
         }
     }
 }

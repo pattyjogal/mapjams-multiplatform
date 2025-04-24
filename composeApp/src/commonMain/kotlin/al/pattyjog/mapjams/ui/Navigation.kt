@@ -1,5 +1,6 @@
 package al.pattyjog.mapjams.ui
 
+import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Map
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -27,7 +29,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
+import org.koin.compose.viewmodel.koinViewModel
 
+const val MAPS_GRAPH_ROUTE = "maps_root"
 
 @Serializable
 data object Home
@@ -49,6 +53,8 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination
+
+    val sharedVm: MapViewModel = koinViewModel()
 
     Scaffold(
         topBar = {
@@ -106,7 +112,7 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Home,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
         ) {
             composable<Home> {
                 Home()
@@ -116,7 +122,8 @@ fun AppNavigation() {
                 MapListScreen(
                     onMapClick = {
                         navController.navigate(MapDetail(id = it.id))
-                    }
+                    },
+                    vm = sharedVm
                 )
             }
 
@@ -128,6 +135,7 @@ fun AppNavigation() {
                     onRegionEdit = {
                         navController.navigate(EditRegion(id = it.id))
                     },
+                    vm = sharedVm
                 )
             }
 
@@ -139,6 +147,7 @@ fun AppNavigation() {
                     onRegionSave = {
                         navController.popBackStack()
                     },
+                    vm = sharedVm
                 )
 
             }
