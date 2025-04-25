@@ -22,6 +22,7 @@ import platform.AVFoundation.dataValue
 import platform.AVFoundation.stringValue
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
+import platform.Foundation.NSUnderlyingErrorKey
 import platform.posix.memcpy
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -73,7 +74,9 @@ actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
 
                             cont.resume(Metadata(title, artist, artwork))
                         } else {
+                            val root  = nsError?.userInfo?.get(NSUnderlyingErrorKey) as? NSError
                             Logger.e("AVAsset error domain=${nsError?.domain} code=${nsError?.code}")
+                            Logger.e("Underlying error ${root?.localizedDescription}, ${root?.domain}, ${root?.code}")
                             Logger.e("Load failed: ${nsError?.localizedDescription}")
                             cont.resumeWithException(
                                 Exception("Failed to load metadata (status=$status): ${nsError?.localizedDescription}, ${musicSource.file}")

@@ -8,15 +8,21 @@ import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.readBytes
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSNumber
 import platform.Foundation.NSSearchPathDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLIsUbiquitousItemKey
+import platform.Foundation.NSURLUbiquitousItemIsDownloadedKey
 import platform.Foundation.NSUserDomainMask
 
 @Composable
@@ -41,6 +47,8 @@ actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
 
 @OptIn(ExperimentalForeignApi::class)
 fun copyToDocuments(pickedUrl: NSURL): String {
+    Logger.d("Is placeholder: ${isPlaceholder(pickedUrl)}")
+    Logger.d("Is readable: ${ensureReadable(pickedUrl)}")
     // 1) Resolve our app's Documents directory
     val docsPath = NSSearchPathForDirectoriesInDomains(
         NSDocumentDirectory,
@@ -60,4 +68,39 @@ fun copyToDocuments(pickedUrl: NSURL): String {
     fm.copyItemAtURL(pickedUrl, destUrl, null)
 
     return destUrl.path!!
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun isPlaceholder(url: NSURL): Boolean {
+    val values = url.resourceValuesForKeys(
+        listOf(
+            NSURLUbiquitousItemIsDownloadedKey,     // true = local
+            NSURLIsUbiquitousItemKey                // true = lives in iCloud
+        ), error = null
+    )
+    val isUbiquitous = values?.get(NSURLIsUbiquitousItemKey) as? Boolean ?: false
+    val downloaded   = values?.get(NSURLUbiquitousItemIsDownloadedKey) as? Boolean ?: true
+    return isUbiquitous && !downloaded
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun ensureReadable(url: NSURL): Boolean {
+    // 1 ⟶ open security scope (returns FALSE if not allowed)
+    val scoped = url.startAccessingSecurityScopedResource()
+
+    // 2 ⟶ if the item lives in iCloud Drive, download it
+    val values = url.resourceValuesForKeys(
+        listOf(NSURLIsUbiquitousItemKey, NSURLUbiquitousItemIsDownloadedKey),
+        null
+    )
+
+    val needsDownload = (values?.get(NSURLIsUbiquitousItemKey) as? Boolean == true) &&
+            (values.get(NSURLUbiquitousItemIsDownloadedKey) as? Boolean == false)
+
+    if (needsDownload) {
+        NSFileManager.defaultManager.startDownloadingUbiquitousItemAtURL(url, null)
+        // ...observe KVO NSURLUbiquitousItemIsDownloadedKey until it becomes true...
+    }
+
+    return scoped || !needsDownload
 }
