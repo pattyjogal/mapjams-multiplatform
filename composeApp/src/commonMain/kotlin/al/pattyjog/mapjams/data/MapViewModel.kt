@@ -19,9 +19,6 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
 
     init {
         loadMaps()
-        viewModelScope.launch {
-            activeMapFlow.value = repository.getMaps().firstOrNull()
-        }
     }
 
     private fun loadMaps() {
@@ -29,6 +26,7 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
             Logger.d { "Loading maps" }
             val ref = repository.getMaps()
             _maps.value = ref
+            activeMapFlow.value = repository.getMaps().firstOrNull()
             Logger.d { "Loaded maps" }
         }
     }

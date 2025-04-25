@@ -45,112 +45,54 @@ data class MapDetail(val id: String)
 @Serializable
 data class EditRegion(val id: String)
 
-val bottomBarScreens = listOf(Home, MapList)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination
-
     val sharedVm: MapViewModel = koinViewModel()
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text("Map Jams")
+    NavHost(
+        navController = navController,
+        startDestination = Home,
+    ) {
+        composable<Home> {
+            Home(
+                onOpenMapList = {
+                    navController.navigate(MapList)
                 },
-                navigationIcon = {
-                    if (navController.previousBackStackEntry != null) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                }
             )
-
-        },
-        bottomBar = {
-            if (bottomBarScreens.any { currentRoute?.hasRoute(it::class) == true }) {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = currentRoute!!.hasRoute<Home>(),
-                        onClick = {
-                            navController.navigate(Home) {
-                                launchSingleTop = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                Icons.Filled.Home,
-                                contentDescription = "The home map view"
-                            )
-                        },
-                        label = { Text("Go") }
-                    )
-                    NavigationBarItem(
-                        selected = currentRoute.hasRoute<MapList>(),
-                        onClick = {
-                            navController.navigate(MapList) {
-                                launchSingleTop = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.List,
-                                contentDescription = "List of all maps"
-                            )
-                        },
-                        label = { Text("Maps") }
-                    )
-                }
-            }
         }
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = Home,
-            modifier = Modifier.padding(padding),
-        ) {
-            composable<Home> {
-                Home()
-            }
 
-            composable<MapList> {
-                MapListScreen(
-                    onMapClick = {
-                        navController.navigate(MapDetail(id = it.id))
-                    },
-                    vm = sharedVm
-                )
-            }
+        composable<MapList> {
+            MapListScreen(
+                onMapClick = {
+                    navController.navigate(MapDetail(id = it.id))
+                },
+                vm = sharedVm
+            )
+        }
 
-            composable<MapDetail> { backStackEntry ->
-                val mapDetail: MapDetail = backStackEntry.toRoute()
+        composable<MapDetail> { backStackEntry ->
+            val mapDetail: MapDetail = backStackEntry.toRoute()
 
-                MapDetailScreen(
-                    mapId = mapDetail.id,
-                    onRegionEdit = {
-                        navController.navigate(EditRegion(id = it.id))
-                    },
-                    vm = sharedVm
-                )
-            }
+            MapDetailScreen(
+                mapId = mapDetail.id,
+                onRegionEdit = {
+                    navController.navigate(EditRegion(id = it.id))
+                },
+                vm = sharedVm
+            )
+        }
 
-            composable<EditRegion> { backStackEntry ->
-                val region: EditRegion = backStackEntry.toRoute()
+        composable<EditRegion> { backStackEntry ->
+            val region: EditRegion = backStackEntry.toRoute()
 
-                RegionEditScreen(
-                    initialRegionId = region.id,
-                    onRegionSave = {
-                        navController.popBackStack()
-                    },
-                    vm = sharedVm
-                )
-
-            }
+            RegionEditScreen(
+                initialRegionId = region.id,
+                onRegionSave = {
+                    navController.popBackStack()
+                },
+                vm = sharedVm
+            )
         }
     }
 }

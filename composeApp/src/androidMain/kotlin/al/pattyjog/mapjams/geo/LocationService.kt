@@ -54,9 +54,9 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+            startForeground(101, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
         } else {
-            startForeground(1, notification)
+            startForeground(101, notification)
         }
 
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
