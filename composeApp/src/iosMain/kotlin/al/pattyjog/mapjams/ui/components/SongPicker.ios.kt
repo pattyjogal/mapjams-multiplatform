@@ -11,13 +11,23 @@ import androidx.compose.runtime.Composable
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.path
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSSearchPathDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 
 @Composable
 actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
     val launcher = rememberFilePickerLauncher(
         type = FileKitType.File(extensions = listOf("mp3"))
     ) { file ->
-        file?.let { onSongSelected(MusicSource.Local(it.path)) }
+        file?.nsUrl?.let {
+            val localPath = copyToDocuments(it)
+            onSongSelected(MusicSource.Local(localPath))
+        }
     }
 
     IconButton(onClick = { launcher.launch() }) {
@@ -27,4 +37,27 @@ actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
             tint = androidx.compose.material3.MaterialTheme.colorScheme.primary
         )
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun copyToDocuments(pickedUrl: NSURL): String {
+    // 1) Resolve our app's Documents directory
+    val docsPath = NSSearchPathForDirectoriesInDomains(
+        NSDocumentDirectory,
+        NSUserDomainMask,
+        true
+    ).first() as String
+    val destUrl = NSURL.fileURLWithPath(docsPath)
+        .URLByAppendingPathComponent(pickedUrl.lastPathComponent!!)
+
+    // 2) Overwrite if the file name already exists
+    val fm = NSFileManager.defaultManager
+    if (fm.fileExistsAtPath(destUrl?.path!!)) {
+        fm.removeItemAtURL(destUrl, null)
+    }
+
+    // 3) Copy (this preserves extended attributes and works with iCloud files)
+    fm.copyItemAtURL(pickedUrl, destUrl, null)
+
+    return destUrl.path!!
 }
