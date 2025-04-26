@@ -7,6 +7,7 @@ import al.pattyjog.mapjams.music.MusicSource
 import al.pattyjog.mapjams.music.getMp3Metadata
 import al.pattyjog.mapjams.ui.components.AlbumArt
 import al.pattyjog.mapjams.ui.components.DefaultAlbumArt
+import al.pattyjog.mapjams.ui.components.EditNameDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +28,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,7 +58,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class, ExperimentalResourceApi::class)
+@OptIn(ExperimentalUuidApi::class, ExperimentalResourceApi::class, ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun MapDetailScreen(
@@ -61,19 +68,46 @@ fun MapDetailScreen(
 ) {
     val maps by vm.maps.collectAsStateWithLifecycle()
 
+    var shouldShowDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(maps) {
         Logger.v { "Maps: ${maps.hashCode()}" }
     }
 
     val map = maps.firstOrNull { it.id == mapId }
-    val regionsWithMetadata by produceState<List<Pair<Region, Metadata?>>>(initialValue = emptyList(), map) {
+    val regionsWithMetadata by produceState<List<Pair<Region, Metadata?>>>(
+        initialValue = emptyList(),
+        map
+    ) {
         value = map?.regions?.map { region ->
             val metadata = region.musicSource?.getMetadata()
             region to metadata
         } ?: emptyList()
     }
 
+    if (shouldShowDialog) {
+        EditNameDialog(map?.name ?: "", onSave = {
+            shouldShowDialog = false
+            vm.updateMap(map!!.copy(name = it))
+        }, onDismiss = { shouldShowDialog = false })
+    }
+
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        map?.name ?: "Loading..."
+                    )
+                },
+                actions = {
+                    IconButton(onClick = {
+                        shouldShowDialog = true
+                    }) {
+                        Icon(Icons.Rounded.Edit, "Edit map name")
+                    }
+                })
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -92,8 +126,8 @@ fun MapDetailScreen(
                 Icon(Icons.Filled.Add, "Add region")
             }
         }
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+    ) { padding ->
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
             items(regionsWithMetadata, key = { it.first.id }) { (region, metadata) ->
                 Card(
                     modifier = Modifier
@@ -101,31 +135,42 @@ fun MapDetailScreen(
                         .padding(8.dp)
                         .clickable { onRegionEdit(region) }
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = region.name, style = MaterialTheme.typography.titleLarge)
-                        if (metadata != null) {
-                            Row {
-                                AlbumArt(metadata, size = 48.dp)
-                                Spacer(Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        metadata.title,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Text(
-                                        metadata.artist,
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(text = region.name, style = MaterialTheme.typography.titleLarge)
+                            if (metadata != null) {
+                                Row {
+                                    AlbumArt(metadata, size = 48.dp)
+                                    Spacer(Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            metadata.title,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            metadata.artist,
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
 
+                                    }
                                 }
+                            } else if (region.musicSource == null) {
+                                Text("No song selected")
+                            } else {
+                                Text("...")
                             }
-                        } else if (region.musicSource == null) {
-                            Text("No song selected")
-                        } else {
-                            Text("...")
+                        }
+                        IconButton(onClick = {
+                            vm.deleteRegion(region)
+                        }) {
+                            Icon(Icons.Rounded.Delete, "Delete this region")
                         }
                     }
                 }

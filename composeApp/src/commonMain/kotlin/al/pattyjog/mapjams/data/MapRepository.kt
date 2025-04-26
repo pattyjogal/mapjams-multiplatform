@@ -14,6 +14,7 @@ interface MapRepository {
     suspend fun getMaps(): List<Map>
     suspend fun addMaps(maps: List<Map>)
     suspend fun deleteMap(id: String)
+    suspend fun updateMap(map: Map)
     suspend fun addRegionToMap(map: Map, region: Region)
     suspend fun deleteRegion(id: String)
     suspend fun updateRegion(region: Region)
@@ -70,6 +71,10 @@ class MapRepositoryImpl(val db: MapJamsDatabase) : MapRepository {
 
     override suspend fun deleteMap(id: String) {
         db.geoQueries.deleteMap(id)
+    }
+
+    override suspend fun updateMap(map: Map) {
+        db.geoQueries.updateMap(map.name, map.id)
     }
 
     override suspend fun addRegionToMap(map: Map, region: Region) {

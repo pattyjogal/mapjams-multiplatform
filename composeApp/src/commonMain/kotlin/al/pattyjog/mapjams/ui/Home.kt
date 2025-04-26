@@ -38,6 +38,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -199,16 +200,9 @@ fun Home(
                     regions = activeMap?.regions ?: emptyList(),
                     currentLocation = location!! // TODO: This feels hacky
                 )
-            } else {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        "Cannot display map yet",
-                        modifier = Modifier.align(Alignment.Center),
-                        textAlign = TextAlign.Center,
-                        style = AppTypography.headlineSmall.copy(
-                            color = Color.Gray
-                        )
-                    )
+            } else if (checked) {
+                Column (modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
                 }
             }
             Column(

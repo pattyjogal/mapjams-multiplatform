@@ -52,6 +52,13 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
         }
     }
 
+    fun updateMap(map: Map) {
+        viewModelScope.launch {
+            repository.updateMap(map)
+            loadMaps()
+        }
+    }
+
     fun getRegionById(id: String): Region? {
         return _maps.value
             .flatMap { it.regions }
@@ -62,6 +69,13 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
         viewModelScope.launch {
             Logger.v { "Updating region: $region" }
             repository.updateRegion(region)
+            loadMaps()
+        }
+    }
+
+    fun deleteRegion(region: Region) {
+        viewModelScope.launch {
+            repository.deleteRegion(region.id)
             loadMaps()
         }
     }

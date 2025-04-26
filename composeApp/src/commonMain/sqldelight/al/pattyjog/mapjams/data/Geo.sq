@@ -28,6 +28,9 @@ INSERT INTO map(id, name) VALUES (?, ?);
 deleteMap:
 DELETE FROM map WHERE id = ?;
 
+updateMap:
+UPDATE map SET name = ? WHERE id = ?;
+
 selectRegionsByMapId:
 SELECT * FROM region WHERE mapId = ?;
 
