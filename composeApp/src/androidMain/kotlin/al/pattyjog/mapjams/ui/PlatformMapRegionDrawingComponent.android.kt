@@ -4,7 +4,6 @@ import al.pattyjog.mapjams.PermissionBridge
 import al.pattyjog.mapjams.PermissionResultCallback
 import al.pattyjog.mapjams.PlatformHaptic
 import al.pattyjog.mapjams.geo.Region
-import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -16,9 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import app.lexilabs.basic.haptic.Haptic
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng

@@ -1,12 +1,10 @@
 package al.pattyjog.mapjams.music
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.Log
-import androidx.compose.ui.graphics.asImageBitmap
-import org.koin.core.context.GlobalContext
 import androidx.core.net.toUri
+import org.koin.core.context.GlobalContext
 
 actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? {
     val context: Context = GlobalContext.get().get()
