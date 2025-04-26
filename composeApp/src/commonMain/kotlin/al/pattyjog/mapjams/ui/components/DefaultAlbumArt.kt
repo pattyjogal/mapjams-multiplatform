@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DefaultAlbumArt(
-    size: Dp = 96.dp
+    size: Dp = 96.dp,
+    modifier: Modifier = Modifier
 ) = Box(
-    modifier = Modifier
+    modifier = modifier
         .background(color = MaterialTheme.colorScheme.secondaryContainer)
         .size(size),
     contentAlignment = Alignment.Center
