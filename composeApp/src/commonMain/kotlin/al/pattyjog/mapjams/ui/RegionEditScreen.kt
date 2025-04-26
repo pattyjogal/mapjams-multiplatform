@@ -3,27 +3,19 @@ package al.pattyjog.mapjams.ui
 import al.pattyjog.mapjams.data.MapViewModel
 import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.music.Metadata
-import al.pattyjog.mapjams.ui.components.DefaultAlbumArt
+import al.pattyjog.mapjams.ui.components.AlbumArt
 import al.pattyjog.mapjams.ui.components.LocalSongPicker
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
@@ -33,14 +25,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalResourceApi::class)
@@ -87,14 +76,7 @@ fun RegionEditScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row {
-                            metadata.value?.artwork?.let { artworkData ->
-                                Image(
-                                    bitmap = artworkData.decodeToImageBitmap(),
-                                    contentDescription = "",
-                                    modifier = Modifier.size(96.dp)
-                                )
-                            } ?: DefaultAlbumArt()
-                            Spacer(Modifier.width(8.dp))
+                            AlbumArt(metadata.value)
                             Column {
                                 metadata.value?.let {
                                     Text(it.title, style = MaterialTheme.typography.titleMedium)
@@ -121,3 +103,4 @@ fun RegionEditScreen(
         Text("Region not found")
     }
 }
+

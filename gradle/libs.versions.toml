@@ -34,6 +34,8 @@ runtimeAndroid = "1.7.8"
 uiGraphicsAndroid = "1.7.8"
 foundationLayoutAndroid = "1.7.8"
 basic = "+"
+playServicesLocation = "21.3.0"
+foundationLayoutAndroidVersion = "1.8.0"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
@@ -80,6 +82,8 @@ androidx-runtime-android = { group = "androidx.compose.runtime", name = "runtime
 androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "uiGraphicsAndroid" }
 androidx-foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroid" }
 basic-haptic = { module = "app.lexilabs.basic:basic-haptic", version.ref = "basic"}
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+foundation-layout-android = { group = "androidx.compose.foundation", name = "foundation-layout-android", version.ref = "foundationLayoutAndroidVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

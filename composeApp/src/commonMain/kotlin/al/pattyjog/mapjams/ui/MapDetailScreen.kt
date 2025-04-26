@@ -5,6 +5,7 @@ import al.pattyjog.mapjams.geo.Region
 import al.pattyjog.mapjams.music.Metadata
 import al.pattyjog.mapjams.music.MusicSource
 import al.pattyjog.mapjams.music.getMp3Metadata
+import al.pattyjog.mapjams.ui.components.AlbumArt
 import al.pattyjog.mapjams.ui.components.DefaultAlbumArt
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -107,13 +108,7 @@ fun MapDetailScreen(
                         Text(text = region.name, style = MaterialTheme.typography.titleLarge)
                         if (metadata != null) {
                             Row {
-                                metadata.artwork?.let { artworkData ->
-                                    Image(
-                                        bitmap = artworkData.decodeToImageBitmap(),
-                                        contentDescription = "Album artwork",
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                } ?: DefaultAlbumArt(48.dp)
+                                AlbumArt(metadata, size = 48.dp)
                                 Spacer(Modifier.width(8.dp))
                                 Column {
                                     Text(

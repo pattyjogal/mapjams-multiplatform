@@ -17,8 +17,17 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Binder
 import android.os.Build
+import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,19 +47,14 @@ class LocationService : Service() {
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
-    private lateinit var locationManager: LocationManager
-    private val locationListener = LocationListener {
-        serviceScope.launch {
-            Log.d("LocationListener", "EMIT ${it.latitude}, ${it.longitude}; accuracy ${it.accuracy}m; provided by ${it.provider}")
-            locationFlow.emit(LatLng(it.latitude, it.longitude))
-        }
-    }
+    private lateinit var client: FusedLocationProviderClient
 
     override fun onCreate() {
         super.onCreate()
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        client = LocationServices.getFusedLocationProviderClient(this)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -59,26 +63,25 @@ class LocationService : Service() {
             startForeground(101, notification)
         }
 
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Log.w("GPS", "GPS Provider is disabled")
-        }
+        val req = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            2_000L
+        )
+            .setMinUpdateDistanceMeters(1f)
+            .build()
 
-        val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        Log.d("LocationService", "GPS provider enabled: $gpsEnabled")
 
-        val hasPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        Log.d("LocationService", "Fine location permission granted: $hasPermission")
-
-        try {
-            locationManager.requestLocationUpdates(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) LocationManager.FUSED_PROVIDER else LocationManager.GPS_PROVIDER,
-                2000L,
-                1f,
-                locationListener
-            )
-        } catch (e: SecurityException) {
-            Log.e("GPS", "Stop bihh", e)
-        }
+        client.requestLocationUpdates(req, object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let { loc ->
+                    serviceScope.launch {
+                        Log.d("Fused", "EMIT ${loc.latitude},${loc.longitude}")
+                        locationFlow.emit(LatLng(loc.latitude, loc.longitude))
+                    }
+                }
+            }
+        },
+            Looper.getMainLooper())
 
         Log.v("LocationService", "manager set")
 
@@ -88,7 +91,6 @@ class LocationService : Service() {
     override fun onDestroy() {
         Log.w("LocationService", "onDestroy")
         super.onDestroy()
-        locationManager.removeUpdates(locationListener)
     }
 
     private fun createNotification(): Notification {
