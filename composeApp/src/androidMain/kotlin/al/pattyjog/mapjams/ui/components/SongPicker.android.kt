@@ -1,7 +1,11 @@
 package al.pattyjog.mapjams.ui.components
 
 import al.pattyjog.mapjams.music.MusicSource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -37,7 +41,11 @@ actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
         }
     }
 
-    Button(onClick = { launcher.launch() }) {
-        Text("Pick a song file")
+    IconButton(onClick = { launcher.launch() }) {
+        Icon(
+            Icons.Default.AudioFile,
+            "Pick a local song",
+            tint = androidx.compose.material3.MaterialTheme.colorScheme.primary
+        )
     }
 }

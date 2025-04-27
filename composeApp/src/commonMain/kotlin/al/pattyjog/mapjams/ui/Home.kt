@@ -165,7 +165,6 @@ fun Home(
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier.safeDrawingPadding().navigationBarsPadding()
-
             )
             {
                 Row(
@@ -180,11 +179,25 @@ fun Home(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     } else {
-                        AlbumArt(
-                            metadata.value,
-                            size = 64.dp,
-                            rounded = true,
-                        )
+                        AnimatedContent(
+                            targetState = metadata.value,
+                            transitionSpec = {
+                                (fadeIn() + slideInHorizontally()).togetherWith(fadeOut() + slideOutHorizontally(targetOffsetX = { 3 * it / 2}))
+                            }
+                        ) {
+                            Row {
+                                AlbumArt(
+                                    metadata.value,
+                                    size = 64.dp,
+                                    rounded = true,
+                                )
+                                Column {
+                                    Text(it?.title ?: "Unknown Song", style = AppTypography.bodyLarge)
+                                    Text(it?.artist ?: "Unknown Artist", style = AppTypography.bodyMedium)
+                                }
+                            }
+
+                        }
                     }
                     FloatingActionButton(
                         onClick = {

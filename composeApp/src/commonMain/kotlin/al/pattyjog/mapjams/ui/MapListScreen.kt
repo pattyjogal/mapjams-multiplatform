@@ -47,8 +47,8 @@ fun MapListScreen(
                 text = { Text("New Map") }
             )
         }
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+    ) { padding ->
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
             items(maps) { map ->
                 Card(
                     modifier = Modifier
