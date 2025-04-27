@@ -56,14 +56,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
+import org.koin.core.qualifier.named
 
 @Composable
 fun Home(
     onOpenMapList: () -> Unit,
 ) {
     val geofenceManager: GeofenceManager = koinInject()
+    val isPlayingMusic = koinInject<MutableStateFlow<Boolean>>(named("isPlayingFlow")).collectAsState()
     val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
     var checked by remember { mutableStateOf(isTrackingLocation) }
 
@@ -184,7 +187,11 @@ fun Home(
                         onClick = {},
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        Icon(Icons.Rounded.PlayArrow, contentDescription = "Play")
+                        if (isPlayingMusic.value) {
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = "Pause")
+                        } else {
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = "Play")
+                        }
                     }
                 }
             }

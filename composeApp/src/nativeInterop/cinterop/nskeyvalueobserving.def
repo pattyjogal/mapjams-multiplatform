@@ -1,0 +1,13 @@
+package = kvo
+language = Objective-C
+compilerOpts = -fobjc-arc
+---
+#import <Foundation/Foundation.h>
+
+@protocol NSKeyValueObserving
+@required
+- (void) observeValueForKeyPath:(NSString *)keyPath
+    ofObject:(id)object
+    change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+    context:(void *)context;
+@end;

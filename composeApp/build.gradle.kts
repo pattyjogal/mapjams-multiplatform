@@ -34,6 +34,16 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+
+        iosTarget.compilations.getByName("main") {
+            val nskeyvalueobserving by cinterops.creating {
+                defFile(
+                    project.file(
+                        "src/nativeInterop/cinterop/nskeyvalueobserving.def"
+                    )
+                )
+            }
+        }
     }
 
     sourceSets {

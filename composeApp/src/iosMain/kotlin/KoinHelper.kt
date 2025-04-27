@@ -13,7 +13,7 @@ import org.koin.dsl.module
 val iosModule = module {
     single<GeofenceManager> { IosGeofenceManager() }
 
-    single<MusicController> { IosMusicController() }
+    single<MusicController> { IosMusicController(get()) }
 
     single<SqlDriver> {
         NativeSqliteDriver(

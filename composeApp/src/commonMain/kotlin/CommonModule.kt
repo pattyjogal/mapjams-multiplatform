@@ -23,6 +23,7 @@ val commonModule: Module = module {
     single(named("locationFlow")) { MutableStateFlow<LatLng?>(null) }
     single(named("regionFlow")) { MutableStateFlow<Region?>(null) }
     single(named("activeMapFlow")) { MutableStateFlow<Map?>(null) }
+    single(named("isPlayingFlow")) { MutableStateFlow(false) }
 
     viewModel { MapViewModel(
         activeMapFlow = get(named("activeMapFlow")),
