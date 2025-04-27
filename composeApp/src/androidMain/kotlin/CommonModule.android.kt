@@ -15,6 +15,7 @@ import dev.icerock.moko.permissions.PermissionsController
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val androidModule: Module = module {
@@ -34,7 +35,7 @@ val androidModule: Module = module {
 
     single<GeofenceManager> { AndroidGeofenceManger(androidContext()) }
 
-    single<MusicController> { AndroidMusicController(androidContext()) }
+    single<MusicController> { AndroidMusicController(androidContext(), get(named("isPlayingFlow"))) }
 
     single<PlatformHaptic> {
         object : PlatformHaptic {

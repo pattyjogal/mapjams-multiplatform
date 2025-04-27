@@ -4,6 +4,7 @@ import al.pattyjog.mapjams.PermissionBridge
 import al.pattyjog.mapjams.PermissionResultCallback
 import al.pattyjog.mapjams.geo.GeofenceManager
 import al.pattyjog.mapjams.music.Metadata
+import al.pattyjog.mapjams.music.MusicController
 import al.pattyjog.mapjams.music.MusicSource
 import al.pattyjog.mapjams.ui.components.AlbumArt
 import al.pattyjog.mapjams.ui.theme.AppTypography
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Warning
@@ -66,7 +68,8 @@ fun Home(
     onOpenMapList: () -> Unit,
 ) {
     val geofenceManager: GeofenceManager = koinInject()
-    val isPlayingMusic = koinInject<MutableStateFlow<Boolean>>(named("isPlayingFlow")).collectAsState()
+    val isPlayingMusic by koinInject<MutableStateFlow<Boolean>>(named("isPlayingFlow")).collectAsState()
+    val musicController = koinInject<MusicController>()
     val isTrackingLocation by geofenceManager.isTracking.collectAsState(false)
     var checked by remember { mutableStateOf(isTrackingLocation) }
 
@@ -184,11 +187,17 @@ fun Home(
                         )
                     }
                     FloatingActionButton(
-                        onClick = {},
+                        onClick = {
+                            if (isPlayingMusic) {
+                                musicController.pause()
+                            } else {
+                                musicController.resume()
+                            }
+                        },
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        if (isPlayingMusic.value) {
-                            Icon(Icons.Rounded.PlayArrow, contentDescription = "Pause")
+                        if (isPlayingMusic) {
+                            Icon(Icons.Rounded.Pause, contentDescription = "Pause")
                         } else {
                             Icon(Icons.Rounded.PlayArrow, contentDescription = "Play")
                         }

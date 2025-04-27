@@ -4,15 +4,19 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 
-class AndroidMusicController(private val context: Context) : MusicController {
+class AndroidMusicController(context: Context, private val isPlayingFlow: MutableStateFlow<Boolean>) : MusicController {
     private val exoPlayer = ExoPlayer.Builder(context).build()
+    private val playerListener = PlayerListener()
 
     init {
         exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+        exoPlayer.addListener(playerListener)
     }
 
     override fun play(musicSource: MusicSource, startAt: Long) {
@@ -85,5 +89,12 @@ class AndroidMusicController(private val context: Context) : MusicController {
 
     override fun getCurrentPosition(): Long {
         return exoPlayer.currentPosition
+    }
+
+    private inner class PlayerListener : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            Logger.v("onIsPlayingChanged: $isPlaying")
+            isPlayingFlow.value = isPlaying
+        }
     }
 }
