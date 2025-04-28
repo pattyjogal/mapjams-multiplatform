@@ -15,7 +15,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.cinterop.useContents
-import org.koin.compose.getKoin
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.Foundation.NSSelectorFromString
 import platform.MapKit.MKAnnotationProtocol
@@ -35,68 +34,92 @@ import platform.MapKit.MKPolygon
 import platform.MapKit.MKPolygonRenderer
 import platform.MapKit.MKUserLocation
 import platform.MapKit.addOverlay
-import platform.MapKit.overlays
+import platform.MapKit.addOverlays
+import platform.MapKit.removeOverlay
 import platform.MapKit.removeOverlays
-import platform.UIKit.UIGestureRecognizerStateEnded
+import platform.UIKit.UIGestureRecognizerStateBegan
 import platform.UIKit.UILongPressGestureRecognizer
 import platform.UIKit.systemBlueColor
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 
 @OptIn(ExperimentalForeignApi::class)
 class MapDelegate(
     private val mapView: MKMapView,
     private val onPolygonUpdate: (List<LatLng>) -> Unit,
 ) : NSObject(), MKMapViewDelegateProtocol {
+    private var userPolygon: MKPolygon? = null
+    private var currentOther: List<MKPolygon> = emptyList()
     private val _nativePolygon = mutableStateListOf<CValue<CLLocationCoordinate2D>>()
     val nativePolygon: List<CValue<CLLocationCoordinate2D>> get() = _nativePolygon
+
 
     private var hasCentered = false
 
     fun setInitial(native: List<CValue<CLLocationCoordinate2D>>) {
         _nativePolygon.clear()
         _nativePolygon += native
-        redrawOverlays()
+        redrawPins()
+        refreshUserPolygon()
     }
 
     @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
     @ObjCAction
     fun handleLongPress(gesture: UILongPressGestureRecognizer) {
-        if (gesture.state == UIGestureRecognizerStateEnded) {
+        if (gesture.state == UIGestureRecognizerStateBegan) {
             val pt = gesture.locationInView(mapView)
             val coord = mapView.convertPoint(pt, toCoordinateFromView = mapView)
             _nativePolygon += coord
-            onPolygonUpdate(_nativePolygon.map { x ->
-                x.useContents {
+            onPolygonUpdate(_nativePolygon.map {
+                it.useContents {
                     LatLng(
                         latitude,
                         longitude
                     )
                 }
             })
-            redrawOverlays()
+            redrawPins()
+            refreshUserPolygon()
         }
     }
 
     var otherOverlays: List<MKPolygon> = emptyList()
         set(value) {
             field = value
-            redrawOverlays()
+            refreshOtherOverlays(value)
+            refreshUserPolygon()
         }
 
-    @OptIn(ExperimentalForeignApi::class)
-    private fun redrawOverlays() {
-        // snapshot overlays
-        mapView.removeOverlays(mapView.overlays)
+    private fun refreshUserPolygon() {
+        val newPoly = nativePolygon.toMKPolygon() ?: return
+        val old = userPolygon
+
+        dispatch_async(dispatch_get_main_queue()) {
+            old?.let { mapView.removeOverlay(it) }
+            mapView.addOverlay(newPoly)
+            userPolygon = newPoly                   // remember for next time
+        }
+    }
+
+    private fun refreshOtherOverlays(newList: List<MKPolygon>) {
+        /* nothing to do if the set is unchanged */
+        if (newList === currentOther) return
+
+        val toRemove = currentOther
+        currentOther = newList            // update snapshot
+
+        dispatch_async(dispatch_get_main_queue()) {
+            if (toRemove.isNotEmpty()) mapView.removeOverlays(toRemove)
+            if (newList.isNotEmpty()) mapView.addOverlays(newList)
+        }
+    }
+
+    private fun redrawPins() {
         mapView.removeAnnotations(mapView.annotations)
-
-        // Add user polygon
-        nativePolygon.toMKPolygon()?.let { mapView.addOverlay(it) }
-        nativePolygon.forEachIndexed { idx, coord ->
-            val ann = VertexAnnotation(idx, coord)
-            mapView.addAnnotation(ann)
+        nativePolygon.forEachIndexed { idx, c ->
+            mapView.addAnnotation(VertexAnnotation(idx, c))
         }
-        // Add others
-        otherOverlays.forEach { mapView.addOverlay(it) }
     }
 
     @Suppress("RETURN_TYPE_MISMATCH_ON_OVERRIDE", "PARAMETER_NAME_CHANGED_ON_OVERRIDE")
@@ -155,19 +178,15 @@ class MapDelegate(
         didChangeDragState: MKAnnotationViewDragState,
         fromOldState: MKAnnotationViewDragState
     ) {
-        // We're only interested when dragging ends
         if (annotationView.annotation is VertexAnnotation &&
             (didChangeDragState == MKAnnotationViewDragStateEnding ||
                     didChangeDragState == MKAnnotationViewDragStateCanceling)
         ) {
-            val vertexAnn = annotationView.annotation as VertexAnnotation
-            val newCoord = vertexAnn.coordinate
-            // Update our state list in-place
-            _nativePolygon[vertexAnn.vertexIndex] = newCoord
-            // Notify shared code
+            val v = annotationView.annotation as VertexAnnotation
+            _nativePolygon[v.vertexIndex] = v.coordinate
+
             onPolygonUpdate(_nativePolygon.map { it.useContents { LatLng(latitude, longitude) } })
-            // Redraw overlay to follow moved point
-            redrawOverlays()
+            refreshUserPolygon()                               // 🔄 instead of redrawOverlays()
             annotationView.dragState = MKAnnotationViewDragStateNone
         }
     }
@@ -179,9 +198,8 @@ actual fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<LatLng>,
     onPolygonUpdate: (List<LatLng>) -> Unit,
     otherRegions: List<Region>,
+    isLocked: Boolean
 ) {
-    val koin = getKoin()
-
     // Convert shared initialPolygon and otherRegions into native coords/polygons
     val nativeInitial = remember { initialPolygon.map { it.toNative() } }
     val nativeOthers = remember(otherRegions) {
@@ -213,6 +231,15 @@ actual fun PlatformMapRegionDrawingComponent(
         if (nativeInitial.isNotEmpty()) {
             val region = MKCoordinateRegionForMapRect(nativeInitial.toMKMapRect())
             mapView.setRegion(region, animated = false)
+        }
+    }
+
+    LaunchedEffect(isLocked) {
+        mapView.apply {
+            scrollEnabled = !isLocked
+            zoomEnabled = !isLocked
+            pitchEnabled = !isLocked
+            rotateEnabled = !isLocked
         }
     }
 

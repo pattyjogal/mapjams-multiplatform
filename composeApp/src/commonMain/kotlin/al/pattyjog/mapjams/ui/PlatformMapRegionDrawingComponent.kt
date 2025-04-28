@@ -9,4 +9,5 @@ expect fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<LatLng>,
     onPolygonUpdate: (List<LatLng>) -> Unit,
     otherRegions: List<Region>,
+    isLocked: Boolean,
 )

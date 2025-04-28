@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
@@ -36,6 +37,7 @@ actual fun PlatformMapRegionDrawingComponent(
     initialPolygon: List<al.pattyjog.mapjams.geo.LatLng>,
     onPolygonUpdate: (List<al.pattyjog.mapjams.geo.LatLng>) -> Unit,
     otherRegions: List<Region>,
+    isLocked: Boolean,
 ) {
     var polygon: List<LatLng> by remember { mutableStateOf(initialPolygon.map { LatLng(it.latitude, it.longitude) }) }
 
@@ -98,7 +100,14 @@ actual fun PlatformMapRegionDrawingComponent(
             polygon += it
             haptic.shortBuzz()
         },
-        contentPadding = PaddingValues(bottom = 64.dp)
+        contentPadding = PaddingValues(bottom = 64.dp),
+        uiSettings = MapUiSettings(
+            zoomControlsEnabled = !isLocked,
+            scrollGesturesEnabled = !isLocked,
+            tiltGesturesEnabled = !isLocked,
+            rotationGesturesEnabled = !isLocked,
+            compassEnabled = !isLocked,
+        )
     ) {
         Polygon(
             points = polygon,

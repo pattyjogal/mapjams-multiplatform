@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -50,6 +53,7 @@ fun RegionEditScreen(
     val map = vm.getMapForRegion(initialRegionId)
 
     var shouldShowDialog by remember { mutableStateOf(false) }
+    var isMapLocked by remember { mutableStateOf(false) }
 
     if (region != null) {
         var regionState by remember { mutableStateOf(region) }
@@ -83,16 +87,29 @@ fun RegionEditScreen(
                         }
                     })
             },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        vm.updateRegion(regionState)
-                        onRegionSave(regionState)
+            bottomBar = {
+                BottomAppBar(
+                    actions = {
+                        IconButton(onClick = { isMapLocked = !isMapLocked }) {
+                            if (isMapLocked) {
+                                Icon(Icons.Rounded.LockOpen, "Unlock map")
+                            } else {
+                                Icon(Icons.Rounded.Lock, "Lock map")
+                            }
+                        }
+                    },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = {
+                                vm.updateRegion(regionState)
+                                onRegionSave(regionState)
+                            }
+                        ) {
+                            Icon(Icons.Filled.Save, "Save region")
+                        }
                     }
-                ) {
-                    Icon(Icons.Filled.Save, "Save region")
-                }
-            }
+                )
+            },
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Column(Modifier.padding(horizontal = 8.dp)) {
@@ -121,7 +138,8 @@ fun RegionEditScreen(
                     onPolygonUpdate = {
                         regionState = regionState.copy(polygon = it)
                     },
-                    otherRegions = map?.regions?.filter { it.id != initialRegionId } ?: emptyList()
+                    otherRegions = map?.regions?.filter { it.id != initialRegionId } ?: emptyList(),
+                    isLocked = isMapLocked
                 )
             }
         }
