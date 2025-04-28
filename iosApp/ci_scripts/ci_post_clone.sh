@@ -46,7 +46,8 @@ install_jdk_if_needed() {
     rm -r "${root_dir}/jdk-${jdk_version}.jdk"
     rm $tar_name# Add the detection file for subsequent builds.
     touch $detect_loc
-    echo " - Set JAVA_HOME in Xcode Cloud to ${jdk_dir}/Home"return 0
+    echo " - Set JAVA_HOME in Xcode Cloud to ${jdk_dir}/Home"
+    return 0
 }
 
 recover_cache_files
