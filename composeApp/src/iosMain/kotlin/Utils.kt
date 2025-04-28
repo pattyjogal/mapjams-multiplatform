@@ -22,24 +22,30 @@ fun bookmarkToUrl(base64: String): NSURL? = memScoped {
     }
 
     val errPtr = alloc<ObjCObjectVar<NSError?>>()
-    val stale  = alloc<BooleanVar>()
+    val stale = alloc<BooleanVar>()
 
-    val url = NSURL.URLByResolvingBookmarkData(
-        data,
-        options = NSURLBookmarkResolutionWithSecurityScope,
-        relativeToURL = null,
-        bookmarkDataIsStale = stale.ptr,
-        error = errPtr.ptr
-    )
-
-    if (url == null) {
+    try {
+        val url = NSURL.URLByResolvingBookmarkData(
+            data,
+            options = NSURLBookmarkResolutionWithSecurityScope,
+            relativeToURL = null,
+            bookmarkDataIsStale = stale.ptr,
+            error = errPtr.ptr
+        )
+        if (url == null) {
+            val reason = errPtr.value?.localizedDescription ?: "unknown error"
+            Logger.e { "bookmarkToUrl: could not resolve bookmark – $reason" }
+            return null
+        }
+        if (stale.value) {
+            Logger.w { "bookmarkToUrl: bookmark is stale – consider re-creating it" }
+        }
+        return url
+    } catch (err: Throwable) {
         val reason = errPtr.value?.localizedDescription ?: "unknown error"
-        Logger.e { "bookmarkToUrl: could not resolve bookmark – $reason" }
-        return null
+        Logger.e(err) { "bookmarkToUrl: could not resolve bookmark – $reason" }
+
     }
 
-    if (stale.value) {
-        Logger.w { "bookmarkToUrl: bookmark is stale – consider re-creating it" }
-    }
-    return url
+    return null
 }
