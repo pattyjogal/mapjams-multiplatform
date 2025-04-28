@@ -8,12 +8,13 @@ import al.pattyjog.mapjams.music.MusicController
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val iosModule = module {
     single<GeofenceManager> { IosGeofenceManager() }
 
-    single<MusicController> { IosMusicController(get()) }
+    single<MusicController> { IosMusicController(get(named("isPlayingFlow"))) }
 
     single<SqlDriver> {
         NativeSqliteDriver(

@@ -1,5 +1,6 @@
 package al.pattyjog.mapjams.music
 
+import bookmarkToUrl
 import co.touchlab.kermit.Logger
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -31,7 +32,7 @@ import kotlin.coroutines.resumeWithException
 actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
     suspendCancellableCoroutine { cont ->
         try {
-            val nsurl = NSURL.fileURLWithPath(musicSource.file)
+            val nsurl = bookmarkToUrl(musicSource.file)
             val scoped = nsurl.startAccessingSecurityScopedResource()
             val key = "commonMetadata"
 

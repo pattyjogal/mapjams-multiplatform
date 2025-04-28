@@ -1,5 +1,7 @@
 package al.pattyjog.mapjams.music
 
+import bookmarkToUrl
+import co.touchlab.kermit.Logger
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -18,40 +20,64 @@ import platform.Foundation.NSNumber
 import platform.Foundation.removeObserver
 import platform.darwin.NSObject
 import kvo.NSKeyValueObservingProtocol
+import platform.Foundation.NSError
 
 class IosMusicController(private val isPlayingFlow: MutableStateFlow<Boolean>) : MusicController {
     private var player: AVAudioPlayer? = null
     private val observer = Observer()
+    private var url: NSURL? = null
 
-    @OptIn(ExperimentalForeignApi::class)
+    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     override fun play(musicSource: MusicSource, startAt: Long) {
         when (musicSource) {
             is MusicSource.Local -> {
-                player?.stop()
-                player = null
+                memScoped {
+                    Logger.v { "Stopping" }
+                    player?.stop()
+                    player = null
+                    Logger.v { "Stopped" }
+                    val errPtr = alloc<ObjCObjectVar<NSError?>>()
 
-                val url = NSURL.fileURLWithPath(musicSource.file)
-                val newPlayer = AVAudioPlayer(url, error = null)
-                newPlayer.apply {
-                    numberOfLoops = -1
-                    volume = 1.0f
-                    prepareToPlay()
-                    currentTime = startAt.toDouble() / 1000
-                    addObserver(
-                        observer = observer,
-                        forKeyPath = "rate",
-                        options = NSKeyValueObservingOptionNew,
-                        context = null
-                    )
-                    delegate = object : NSObject(), AVAudioPlayerDelegateProtocol {
-                        override fun audioPlayerDidFinishPlaying(
-                            player: AVAudioPlayer,
-                            successfully: Boolean
-                        ) = push(false)
+                    url = bookmarkToUrl(musicSource.file)
+                    url?.startAccessingSecurityScopedResource()
+                    Logger.v { "Got music source: $url" }
+                    val isReachable = url?.checkResourceIsReachableAndReturnError(errPtr.ptr) ?: false
+                    if (!isReachable) {
+                        Logger.e { "URL is not reachable: ${errPtr.value?.localizedDescription}" }
+                        Logger.e { "File should have been at ${musicSource.file}" }
                     }
-                    play()
+                    val newPlayer = try {
+                        AVAudioPlayer(url!!, error = errPtr.ptr)
+                    } catch (t: Throwable) {
+                        val desc = errPtr.value?.localizedDescription ?: "unknown error"
+                        Logger.e(t) { "AVAudioPlayer returned null: $desc" }
+                        return
+                    }
+                    Logger.v { "Here's the player: $newPlayer" }
+                    newPlayer.apply {
+                        numberOfLoops = -1
+                        volume = 1.0f
+                        prepareToPlay()
+                        currentTime = startAt.toDouble() / 1000
+                        Logger.v { "Adding observer" }
+                        addObserver(
+                            observer = observer,
+                            forKeyPath = "rate",
+                            options = NSKeyValueObservingOptionNew,
+                            context = null
+                        )
+                        Logger.v { "Added observer" }
+                        delegate = object : NSObject(), AVAudioPlayerDelegateProtocol {
+                            override fun audioPlayerDidFinishPlaying(
+                                player: AVAudioPlayer,
+                                successfully: Boolean
+                            ) = push(false)
+                        }
+                        play()
+                        push(true)
+                    }
+                    player = newPlayer
                 }
-                player = newPlayer
             }
 
             else -> {
@@ -62,15 +88,18 @@ class IosMusicController(private val isPlayingFlow: MutableStateFlow<Boolean>) :
 
     override fun pause() {
         player?.pause()
+        push(false)
     }
 
     override fun resume() {
         player?.play()
+        push(true)
     }
 
     override fun stop() {
         player?.stop()
         release()
+        push(false)
         player = null
     }
 
@@ -124,6 +153,7 @@ class IosMusicController(private val isPlayingFlow: MutableStateFlow<Boolean>) :
         isPlayingFlow.value = isPlaying
     }
 
+    // This doesn't do anything
     @OptIn(ExperimentalForeignApi::class)
     private inner class Observer : NSObject(), NSKeyValueObservingProtocol {
         @OptIn(ExperimentalForeignApi::class)
@@ -133,16 +163,20 @@ class IosMusicController(private val isPlayingFlow: MutableStateFlow<Boolean>) :
             change: Map<Any?, *>?,
             context: CPointer<*>?
         ) {
+            Logger.v { "I'm in observeValueForKeyPath" }
             if (keyPath == "rate" && ofObject === player) {
                 val newRate =
                     (change?.get(NSKeyValueChangeNewKey) as? NSNumber)?.doubleValue ?: 0.0
                 push(newRate > 0.0)   // update the StateFlow
             }
+            Logger.v { "Finished observeValueForKeyPath" }
+
         }
     }
 
     private fun release() {
         player?.removeObserver(observer, "rate")
         player?.delegate = null
+        url?.stopAccessingSecurityScopedResource()
     }
 }

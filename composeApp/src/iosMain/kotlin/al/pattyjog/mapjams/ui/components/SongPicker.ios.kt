@@ -9,23 +9,34 @@ import androidx.compose.runtime.Composable
 import co.touchlab.kermit.Logger
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCObjectVar
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
+import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLBookmarkCreationWithSecurityScope
 import platform.Foundation.NSURLIsUbiquitousItemKey
 import platform.Foundation.NSURLUbiquitousItemIsDownloadedKey
 import platform.Foundation.NSUserDomainMask
+import platform.Foundation.base64Encoding
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
     val launcher = rememberFilePickerLauncher(
         type = FileKitType.File(extensions = listOf("mp3"))
     ) { file ->
         file?.nsUrl?.let {
-            val localPath = copyToDocuments(it)
-            onSongSelected(MusicSource.Local(localPath))
+            val bookmark = it.toSecurityBookmark()
+            onSongSelected(MusicSource.Local(bookmark.base64Encoding()))
         }
     }
 
@@ -96,4 +107,22 @@ fun ensureReadable(url: NSURL): Boolean {
     }
 
     return scoped || !needsDownload
+}
+
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+fun NSURL.toSecurityBookmark(): NSData {
+    memScoped {
+        val errPtr = alloc<ObjCObjectVar<NSError?>>()
+        val data = this@toSecurityBookmark.bookmarkDataWithOptions(
+            options = NSURLBookmarkCreationWithSecurityScope,   // ← main flag
+            includingResourceValuesForKeys = null,
+            relativeToURL = null,
+            error = errPtr.ptr
+        )
+        requireNotNull(data) {
+            "Bookmark creation failed: ${errPtr.value?.localizedDescription}"
+        }
+
+        return data
+    }
 }
