@@ -22,7 +22,6 @@ import platform.AVFoundation.commonMetadata
 import platform.AVFoundation.dataValue
 import platform.AVFoundation.stringValue
 import platform.Foundation.NSError
-import platform.Foundation.NSURL
 import platform.Foundation.NSUnderlyingErrorKey
 import platform.posix.memcpy
 import kotlin.coroutines.resume
@@ -33,7 +32,7 @@ actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
     suspendCancellableCoroutine { cont ->
         try {
             val nsurl = bookmarkToUrl(musicSource.file)
-            val scoped = nsurl.startAccessingSecurityScopedResource()
+            val scoped = nsurl?.startAccessingSecurityScopedResource() ?: false
             val key = "commonMetadata"
 
             val opts = mapOf<Any?, Any?>(
@@ -41,9 +40,9 @@ actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
                 platform.AVFoundation.AVURLAssetAllowsCellularAccessKey to true
             ) as Map<Any?, *>
 
-            val asset = AVURLAsset.URLAssetWithURL(nsurl, opts)
+            val asset = nsurl?.let { AVURLAsset.URLAssetWithURL(it, opts) }
 
-            asset.loadValuesAsynchronouslyForKeys(listOf(key)) {
+            asset?.loadValuesAsynchronouslyForKeys(listOf(key)) {
                 try {
                     memScoped {
                         val errPtr = alloc<ObjCObjectVar<NSError?>>()
