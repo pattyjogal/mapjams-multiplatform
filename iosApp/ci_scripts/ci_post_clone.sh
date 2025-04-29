@@ -76,6 +76,8 @@ if [ ! -d "$IOS_APP_FOLDER_PATH" ]; then
 fi
 cd "$IOS_APP_FOLDER_PATH" || exit 1
 
+ls "$CI_PRIMARY_REPOSITORY_PATH/composeApp/build/cocoapods/framework"
+
 # --- Run Pod Install ---
 echo "Running 'pod install' in directory: $(pwd)"
 pod install

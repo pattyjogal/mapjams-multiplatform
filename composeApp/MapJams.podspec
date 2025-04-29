@@ -8,8 +8,8 @@ Pod::Spec.new do |spec|
     spec.summary                  = 'The iOS Map Jams app'
     spec.vendored_frameworks      = 'build/cocoapods/framework/MapJams.framework'
     spec.libraries                = 'c++'
-                
-    spec.dependency 'Firebase/Crashlytics'
+    spec.ios.deployment_target    = '14.1'
+    spec.dependency 'FirebaseCrashlytics'
                 
     if !Dir.exist?('build/cocoapods/framework/MapJams.framework') || Dir.empty?('build/cocoapods/framework/MapJams.framework')
         raise "
