@@ -9,19 +9,6 @@ brew install cocoapods
 
 echo "Using CocoaPods version: $(pod --version)"
 
-cd "$CI_PRIMARY_REPOSITORY_PATH" || exit
-./gradlew :composeApp:generateDummyFramework
-
-# Install dependencies you manage with CocoaPods.
-IOS_APP_FOLDER_PATH="$CI_PRIMARY_REPOSITORY_PATH/iosApp"
-echo "Navigating to iOS app directory: $IOS_APP_FOLDER_PATH"
-
-if [ ! -d "$IOS_APP_FOLDER_PATH" ]; then
-  echo "Error: iOS app directory '$IOS_APP_FOLDER_PATH' not found."
-  exit 1
-fi
-cd "$IOS_APP_FOLDER_PATH" || exit
-
 # --- Run Pod Install ---
 echo "Running 'pod install' in directory: $(pwd)"
 pod install
@@ -78,3 +65,16 @@ install_jdk_if_needed() {
 
 recover_cache_files
 install_jdk_if_needed
+
+cd "$CI_PRIMARY_REPOSITORY_PATH" || exit
+./gradlew :composeApp:generateDummyFramework
+
+# Install dependencies you manage with CocoaPods.
+IOS_APP_FOLDER_PATH="$CI_PRIMARY_REPOSITORY_PATH/iosApp"
+echo "Navigating to iOS app directory: $IOS_APP_FOLDER_PATH"
+
+if [ ! -d "$IOS_APP_FOLDER_PATH" ]; then
+  echo "Error: iOS app directory '$IOS_APP_FOLDER_PATH' not found."
+  exit 1
+fi
+cd "$IOS_APP_FOLDER_PATH" || exit
