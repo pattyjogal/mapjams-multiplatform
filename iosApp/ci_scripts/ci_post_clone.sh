@@ -1,4 +1,11 @@
 #!/bin/sh
+
+# Install CocoaPods using Homebrew.
+brew install cocoapods
+
+# Install dependencies you manage with CocoaPods.
+pod install
+
 root_dir=$CI_WORKSPACE_PATH
 repo_dir=$CI_PRIMARY_REPOSITORY_PATH
 jdk_dir="${CI_DERIVED_DATA_PATH}/JDK"
