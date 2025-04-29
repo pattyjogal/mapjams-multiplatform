@@ -6,15 +6,15 @@ Pod::Spec.new do |spec|
     spec.authors                  = ''
     spec.license                  = ''
     spec.summary                  = 'The iOS Map Jams app'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/MyFramework.framework'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/MapJams.framework'
     spec.libraries                = 'c++'
                 
+    spec.dependency 'Firebase/Crashlytics'
                 
-                
-    if !Dir.exist?('build/cocoapods/framework/MyFramework.framework') || Dir.empty?('build/cocoapods/framework/MyFramework.framework')
+    if !Dir.exist?('build/cocoapods/framework/MapJams.framework') || Dir.empty?('build/cocoapods/framework/MapJams.framework')
         raise "
 
-        Kotlin framework 'MyFramework' doesn't exist yet, so a proper Xcode project can't be generated.
+        Kotlin framework 'MapJams' doesn't exist yet, so a proper Xcode project can't be generated.
         'pod install' should be executed after running ':generateDummyFramework' Gradle task:
 
             ./gradlew :composeApp:generateDummyFramework
@@ -28,7 +28,7 @@ Pod::Spec.new do |spec|
                 
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':composeApp',
-        'PRODUCT_MODULE_NAME' => 'MyFramework',
+        'PRODUCT_MODULE_NAME' => 'MapJams',
     }
                 
     spec.script_phases = [

@@ -1,11 +1,27 @@
 #!/bin/sh
 
+echo "Running in Xcode Cloud environment."
+echo "Workspace path: $CI_WORKSPACE" # $CI_WORKSPACE is an Xcode Cloud env variable for the repo root
+echo "Current directory: $(pwd)"
+
 # Install CocoaPods using Homebrew.
 brew install cocoapods
 
-# Install dependencies you manage with CocoaPods.
-pod install
+echo "Using CocoaPods version: $(pod --version)"
 
+# Install dependencies you manage with CocoaPods.
+IOS_APP_FOLDER_PATH="$CI_WORKSPACE/iosApp"
+echo "Navigating to iOS app directory: $IOS_APP_FOLDER_PATH"
+
+if [ ! -d "$IOS_APP_FOLDER_PATH" ]; then
+  echo "Error: iOS app directory '$IOS_APP_FOLDER_PATH' not found."
+  exit 1
+fi
+cd "$IOS_APP_FOLDER_PATH" || exit
+
+# --- Run Pod Install ---
+echo "Running 'pod install' in directory: $(pwd)"
+pod install
 root_dir=$CI_WORKSPACE_PATH
 repo_dir=$CI_PRIMARY_REPOSITORY_PATH
 jdk_dir="${CI_DERIVED_DATA_PATH}/JDK"
