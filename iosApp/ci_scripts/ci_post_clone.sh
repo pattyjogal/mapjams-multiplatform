@@ -9,6 +9,9 @@ brew install cocoapods
 
 echo "Using CocoaPods version: $(pod --version)"
 
+cd "$CI_PRIMARY_REPOSITORY_PATH" || exit
+./gradlew :composeApp:generateDummyFramework
+
 # Install dependencies you manage with CocoaPods.
 IOS_APP_FOLDER_PATH="$CI_PRIMARY_REPOSITORY_PATH/iosApp"
 echo "Navigating to iOS app directory: $IOS_APP_FOLDER_PATH"
