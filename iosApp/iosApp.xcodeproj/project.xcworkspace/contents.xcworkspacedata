@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:New Group"
+      name = "New Group">
+      <Group
+         location = "absolute:/Users/pattyjogal/StudioProjects/mapjams-multiplatform/composeApp/src/iosMain"
+         name = "iosMain">
+         <Group
+            location = "group:kotlin"
+            name = "kotlin">
+            <Group
+               location = "group:al"
+               name = "al">
+               <Group
+                  location = "group:pattyjog"
+                  name = "pattyjog">
+                  <Group
+                     location = "group:mapjams"
+                     name = "mapjams">
+                     <Group
+                        location = "group:music"
+                        name = "music">
+                        <FileRef
+                           location = "group:IosMusicController.kt">
+                        </FileRef>
+                        <FileRef
+                           location = "group:PlatformMusicMetadataExtractor.ios.kt">
+                        </FileRef>
+                     </Group>
+                     <Group
+                        location = "group:ui"
+                        name = "ui">
+                        <FileRef
+                           location = "group:PlatformMapRegionDrawingComponent.ios.kt">
+                        </FileRef>
+                        <FileRef
+                           location = "group:PlatformMapDisplayComponent.ios.kt">
+                        </FileRef>
+                        <FileRef
+                           location = "group:PlatformMapUtils.ios.kt">
+                        </FileRef>
+                        <Group
+                           location = "group:components"
+                           name = "components">
+                           <FileRef
+                              location = "group:SongPicker.ios.kt">
+                           </FileRef>
+                        </Group>
+                     </Group>
+                     <FileRef
+                        location = "group:NoOpPermissionsBridgeListener.kt">
+                     </FileRef>
+                     <FileRef
+                        location = "group:MainViewController.kt">
+                     </FileRef>
+                     <Group
+                        location = "group:geo"
+                        name = "geo">
+                        <FileRef
+                           location = "group:IosGeofenceManager.kt">
+                        </FileRef>
+                     </Group>
+                     <FileRef
+                        location = "group:PermissionRequester.ios.kt">
+                     </FileRef>
+                     <FileRef
+                        location = "group:Platform.ios.kt">
+                     </FileRef>
+                  </Group>
+               </Group>
+            </Group>
+            <FileRef
+               location = "group:KoinHelper.kt">
+            </FileRef>
+         </Group>
+      </Group>
+   </Group>
+   <FileRef
+      location = "self:">
+   </FileRef>
+</Workspace>

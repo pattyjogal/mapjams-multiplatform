@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 buildscript {
     dependencies {
@@ -15,6 +16,10 @@ plugins {
     alias(libs.plugins.secrets)
     kotlin("plugin.serialization") version "2.0.21"
     id("app.cash.sqldelight") version "2.0.2"
+    alias(libs.plugins.kotlinCocoapods)
+
+    alias(libs.plugins.googleServices) apply true // Apply directly for Android app module config
+    alias(libs.plugins.firebaseCrashlytics) apply true // Apply directly for Android app module config
 }
 
 kotlin {
@@ -45,6 +50,38 @@ kotlin {
         }
     }
 
+    cocoapods {
+        // Required properties
+        // Specify the required Pod version here
+        // Otherwise, the Gradle project version is used
+        version = "1.0"
+        summary = "The iOS Map Jams app"
+        homepage = "http://example.com"
+
+        // Optional properties
+        // Configure the Pod name here instead of changing the Gradle project name
+        name = "MapJams"
+
+        framework {
+            // Required properties
+            // Framework name configuration. Use this property instead of deprecated 'frameworkName'
+            baseName = "MyFramework"
+
+            // Optional properties
+            // Specify the framework linking type. It's dynamic by default.
+            isStatic = false
+            // Dependency export
+            // Uncomment and specify another project module if you have one:
+            // export(project(":<your other KMP module>"))
+            @OptIn(ExperimentalKotlinGradlePluginApi::class)
+            transitiveExport = false // This is default.
+        }
+
+        // Maps custom Xcode configuration to NativeBuildType
+        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -63,6 +100,12 @@ kotlin {
             implementation(libs.koin.android)
 
             implementation(libs.androidx.media3.exoplayer)
+
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            // Analytics dependency (recommended for Crashlytics user data)
+            implementation(libs.firebase.analytics)
+            // Crashlytics dependency
+            implementation(libs.firebase.crashlytics)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -124,6 +167,10 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled = false
+                mappingFileUploadEnabled = !isMinifyEnabled
+            }
         }
     }
     compileOptions {

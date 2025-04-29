@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "951102762140",
+    "project_id": "mapjams-bae60",
+    "storage_bucket": "mapjams-bae60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951102762140:android:450c79b7bfa5bb74649159",
+        "android_client_info": {
+          "package_name": "al.pattyjog.mapjams"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFKCo6WxEyxUx_oi4oeZjqduZWQ1iZRCs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

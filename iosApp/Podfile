@@ -1,0 +1,12 @@
+# iosApp/Podfile
+platform :ios, '14.1' # Match your deployment target from build.gradle.kts
+
+target 'iosApp' do
+  use_frameworks! # Or remove if your KMP framework `isStatic = true`
+
+  # Pod for your KMP shared module (uses baseName from build.gradle.kts)
+  pod 'MapJams', :path => '../composeApp' # Adjust path to root if needed, or ../shared
+
+  # Add Firebase Crashlytics Pod
+  pod 'Firebase/Crashlytics'
+end
