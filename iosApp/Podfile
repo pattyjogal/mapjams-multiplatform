@@ -8,5 +8,5 @@ target 'iosApp' do
   pod 'MapJams', :path => '../composeApp' # Adjust path to root if needed, or ../shared
 
   # Add Firebase Crashlytics Pod
-  pod 'Firebase/Crashlytics'
+  pod 'FirebaseCrashlytics'
 end

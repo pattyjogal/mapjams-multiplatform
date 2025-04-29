@@ -58,6 +58,8 @@ kotlin {
         summary = "The iOS Map Jams app"
         homepage = "http://example.com"
 
+        ios.deploymentTarget = "14.1"
+
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
         name = "MapJams"
@@ -65,7 +67,7 @@ kotlin {
         framework {
             // Required properties
             // Framework name configuration. Use this property instead of deprecated 'frameworkName'
-            baseName = "MyFramework"
+            baseName = "MapJams"
 
             // Optional properties
             // Specify the framework linking type. It's dynamic by default.
@@ -75,6 +77,10 @@ kotlin {
             // export(project(":<your other KMP module>"))
             @OptIn(ExperimentalKotlinGradlePluginApi::class)
             transitiveExport = false // This is default.
+        }
+
+        pod("FirebaseCrashlytics") {
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
 
         // Maps custom Xcode configuration to NativeBuildType
