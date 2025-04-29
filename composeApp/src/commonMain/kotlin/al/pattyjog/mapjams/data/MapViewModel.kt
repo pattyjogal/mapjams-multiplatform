@@ -22,7 +22,9 @@ class MapViewModel(private val repository: MapRepository, private val activeMapF
             Logger.d { "Loading maps" }
             val ref = repository.getMaps()
             _maps.value = ref
-            activeMapFlow.value = repository.getMaps().firstOrNull()
+            if (activeMapFlow.value == null) {
+                activeMapFlow.value = ref.firstOrNull()
+            }
             Logger.d { "Loaded maps" }
         }
     }
