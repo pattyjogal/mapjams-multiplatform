@@ -1,3 +1,5 @@
+package al.pattyjog.mapjams
+
 import co.touchlab.kermit.Logger
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.BooleanVar

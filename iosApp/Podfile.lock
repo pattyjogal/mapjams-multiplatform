@@ -45,8 +45,6 @@ PODS:
   - GoogleUtilities/UserDefaults (8.0.2):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - MapJams (1.0):
-    - FirebaseCrashlytics
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -55,10 +53,12 @@ PODS:
   - PromisesObjC (2.4.0)
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
+  - Shared (1.0):
+    - FirebaseCrashlytics
 
 DEPENDENCIES:
   - FirebaseCrashlytics
-  - MapJams (from `../composeApp`)
+  - Shared (from `../composeApp`)
 
 SPEC REPOS:
   trunk:
@@ -76,7 +76,7 @@ SPEC REPOS:
     - PromisesSwift
 
 EXTERNAL SOURCES:
-  MapJams:
+  Shared:
     :path: "../composeApp"
 
 SPEC CHECKSUMS:
@@ -89,11 +89,11 @@ SPEC CHECKSUMS:
   FirebaseSessions: 2c0ea8956085570415601d64cc7ebe83c8dd5c93
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
-  MapJams: 89bf42fe3ce28282d579cc95d096325417855c62
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
+  Shared: b9aab3d9cf3090bfd4eb956de4a003f68bce5ffe
 
-PODFILE CHECKSUM: 0e36c9644b8b278bb53f399825194cf7db66a5e6
+PODFILE CHECKSUM: 5c608a710d0d7ca72a17c5642a7f3f9909a90f22
 
 COCOAPODS: 1.16.2

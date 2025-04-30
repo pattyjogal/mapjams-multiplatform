@@ -64,6 +64,23 @@
 #
 ##############################################################################
 
+# <<< START RVM Initialization >>>
+# Attempt to load RVM environment if available
+# Ensure this path is correct for your system
+if [ -s "$HOME/.rvm/scripts/rvm" ] ; then
+  echo "[gradlew] Sourcing RVM..."
+  . "$HOME/.rvm/scripts/rvm"
+
+  # Explicitly select the desired Ruby version (replace if needed)
+  echo "[gradlew] Using RVM ruby-3.2.2..."
+  rvm use 3.2.2 > /dev/null 2>&1 # Suppress verbose output
+  echo "[gradlew] RVM Ruby set: $(which ruby)"
+  echo "[gradlew] RVM Gem Path: $GEM_PATH"
+else
+  echo "[gradlew] RVM script not found at $HOME/.rvm/scripts/rvm"
+fi
+# <<< END RVM Initialization >>>
+
 # Attempt to set APP_HOME
 
 # Resolve links: $0 may be a link

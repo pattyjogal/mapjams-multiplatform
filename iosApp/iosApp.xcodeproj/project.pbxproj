@@ -12,7 +12,6 @@
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		58B374E7E6205170A9AAAD35 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C565B3D8161E3BAE7B1C8CEB /* Pods_iosApp.framework */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
-		8B350DA12DAF308200434D66 /* MapRegionDrawingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B350DA02DAF305C00434D66 /* MapRegionDrawingView.swift */; };
 		8B55EBAF2DC14DF1005E40DC /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B55EBAE2DC14DF1005E40DC /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
@@ -36,7 +35,6 @@
 		7555FF7B242A565900829871 /* MapJams.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MapJams.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8B350DA02DAF305C00434D66 /* MapRegionDrawingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapRegionDrawingView.swift; sourceTree = "<group>"; };
 		8B55EBAE2DC14DF1005E40DC /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		C565B3D8161E3BAE7B1C8CEB /* Pods_iosApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iosApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -94,7 +92,6 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
-				8B350DA02DAF305C00434D66 /* MapRegionDrawingView.swift */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF82242A565900829871 /* ContentView.swift */,
 				7555FF8C242A565B00829871 /* Info.plist */,
@@ -135,7 +132,6 @@
 				7555FF79242A565900829871 /* Resources */,
 				4FE93B81247EA907FD5AE726 /* [CP] Embed Pods Frameworks */,
 				8B55EBB02DC14E5D005E40DC /* Firebase Crashlytics Upload dSYMs */,
-				CCB2307A9319BE32A10EDABA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -202,13 +198,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -234,27 +226,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Make sure this path is correct for your project structure\n# If using standard CocoaPods setup, ${PODS_ROOT} should work.\n# Note: Ensure quotes handle potential spaces in paths.\n\"${PODS_ROOT}/FirebaseCrashlytics/upload-symbols\" -gsp \"${PROJECT_DIR}/GoogleService-Info.plist\" -p ios \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\n";
-		};
-		CCB2307A9319BE32A10EDABA /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-resources.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		D2347BA32351951BE1F92A3E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -287,7 +258,6 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
-				8B350DA12DAF308200434D66 /* MapRegionDrawingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

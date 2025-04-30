@@ -1,12 +1,12 @@
-import al.pattyjog.mapjams.MapJamsDatabase
-import al.pattyjog.mapjams.NoOpPermissionsBridgeListener
-import al.pattyjog.mapjams.PermissionBridge
+package al.pattyjog.mapjams
+
 import al.pattyjog.mapjams.geo.GeofenceManager
 import al.pattyjog.mapjams.geo.IosGeofenceManager
 import al.pattyjog.mapjams.music.IosMusicController
 import al.pattyjog.mapjams.music.MusicController
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import commonModule
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module

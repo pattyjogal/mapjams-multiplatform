@@ -1,6 +1,6 @@
 package al.pattyjog.mapjams.music
 
-import bookmarkToUrl
+import al.pattyjog.mapjams.bookmarkToUrl
 import co.touchlab.kermit.Logger
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers

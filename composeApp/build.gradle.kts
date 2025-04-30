@@ -35,7 +35,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "Shared"
 //            isStatic = true
         }
 
@@ -62,12 +62,12 @@ kotlin {
 
         // Optional properties
         // Configure the Pod name here instead of changing the Gradle project name
-        name = "MapJams"
+        name = "Shared"
 
         framework {
             // Required properties
             // Framework name configuration. Use this property instead of deprecated 'frameworkName'
-            baseName = "MapJams"
+            baseName = "Shared"
 
             // Optional properties
             // Specify the framework linking type. It's dynamic by default.
