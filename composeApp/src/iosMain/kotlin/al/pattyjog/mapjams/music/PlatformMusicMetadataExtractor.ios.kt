@@ -31,6 +31,18 @@ import kotlin.coroutines.resumeWithException
 actual suspend fun getMp3Metadata(musicSource: MusicSource.Local): Metadata? =
     suspendCancellableCoroutine { cont ->
         try {
+            // Assuming 'originalUrlString' is the String URL used to create the bookmark
+            val fileManager = platform.Foundation.NSFileManager.defaultManager
+            val originalUrl = platform.Foundation.NSURL.URLWithString("file:///private/var/mobile/Containers/Shared/AppGroup/303F0D67-2F5A-42E7-81B2-4A664B9DD2D7/File%20Provider%20Storage/1-10%20On%20Melancholy%20Hill.mp3")
+            if (originalUrl != null && fileManager.fileExistsAtPath(originalUrl.path!!)) {
+                Logger.i { "File DOES exist at original path before resolving bookmark." }
+                // Now try resolving the bookmark...
+                val resolvedUrl = bookmarkToUrl(musicSource.file)
+                // ...
+            } else {
+                Logger.e { "File DOES NOT exist at original path before resolving bookmark." }
+                // Don't bother trying to resolve the bookmark, the file is gone.
+            }
             val nsurl = bookmarkToUrl(musicSource.file)
             val scoped = nsurl?.startAccessingSecurityScopedResource() ?: false
             val key = "commonMetadata"

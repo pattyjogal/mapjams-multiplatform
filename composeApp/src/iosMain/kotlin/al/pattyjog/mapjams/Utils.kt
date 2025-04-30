@@ -46,7 +46,6 @@ fun bookmarkToUrl(base64: String): NSURL? = memScoped {
     } catch (err: Throwable) {
         val reason = errPtr.value?.localizedDescription ?: "unknown error"
         Logger.e(err) { "bookmarkToUrl: could not resolve bookmark – $reason" }
-
     }
 
     return null

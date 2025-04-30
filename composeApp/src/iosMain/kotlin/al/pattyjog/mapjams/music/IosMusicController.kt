@@ -37,7 +37,6 @@ class IosMusicController(private val isPlayingFlow: MutableStateFlow<Boolean>) :
                     player = null
                     Logger.v { "Stopped" }
                     val errPtr = alloc<ObjCObjectVar<NSError?>>()
-
                     url = bookmarkToUrl(musicSource.file)
                     url?.startAccessingSecurityScopedResource()
                     Logger.v { "Got music source: $url" }
