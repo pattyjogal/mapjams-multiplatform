@@ -73,66 +73,6 @@ actual fun LocalSongPicker(onSongSelected: (MusicSource) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
-fun copyToDocuments(pickedUrl: NSURL): String {
-    Logger.d("Is placeholder: ${isPlaceholder(pickedUrl)}")
-    Logger.d("Is readable: ${ensureReadable(pickedUrl)}")
-    // 1) Resolve our app's Documents directory
-    val docsPath = NSSearchPathForDirectoriesInDomains(
-        NSDocumentDirectory,
-        NSUserDomainMask,
-        true
-    ).first() as String
-    val destUrl = NSURL.fileURLWithPath(docsPath)
-        .URLByAppendingPathComponent(pickedUrl.lastPathComponent!!)
-
-    // 2) Overwrite if the file name already exists
-    val fm = NSFileManager.defaultManager
-    if (fm.fileExistsAtPath(destUrl?.path!!)) {
-        fm.removeItemAtURL(destUrl, null)
-    }
-
-    // 3) Copy (this preserves extended attributes and works with iCloud files)
-    fm.copyItemAtURL(pickedUrl, destUrl, null)
-
-    return destUrl.path!!
-}
-
-@OptIn(ExperimentalForeignApi::class)
-fun isPlaceholder(url: NSURL): Boolean {
-    val values = url.resourceValuesForKeys(
-        listOf(
-            NSURLUbiquitousItemIsDownloadedKey,     // true = local
-            NSURLIsUbiquitousItemKey                // true = lives in iCloud
-        ), error = null
-    )
-    val isUbiquitous = values?.get(NSURLIsUbiquitousItemKey) as? Boolean ?: false
-    val downloaded   = values?.get(NSURLUbiquitousItemIsDownloadedKey) as? Boolean ?: true
-    return isUbiquitous && !downloaded
-}
-
-@OptIn(ExperimentalForeignApi::class)
-fun ensureReadable(url: NSURL): Boolean {
-    // 1 ⟶ open security scope (returns FALSE if not allowed)
-    val scoped = url.startAccessingSecurityScopedResource()
-
-    // 2 ⟶ if the item lives in iCloud Drive, download it
-    val values = url.resourceValuesForKeys(
-        listOf(NSURLIsUbiquitousItemKey, NSURLUbiquitousItemIsDownloadedKey),
-        null
-    )
-
-    val needsDownload = (values?.get(NSURLIsUbiquitousItemKey) as? Boolean == true) &&
-            (values.get(NSURLUbiquitousItemIsDownloadedKey) as? Boolean == false)
-
-    if (needsDownload) {
-        NSFileManager.defaultManager.startDownloadingUbiquitousItemAtURL(url, null)
-        // ...observe KVO NSURLUbiquitousItemIsDownloadedKey until it becomes true...
-    }
-
-    return scoped || !needsDownload
-}
-
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 fun NSURL.toSecurityBookmark(): NSData {
     Logger.d { "Creating bookmark for $this" }
